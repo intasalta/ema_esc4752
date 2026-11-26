@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resumen Climatológico - Esc. 4752 Aráoz Costas (Campo Quijano)</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <!-- Chart.js & Feather Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
+  <script>
+    if (localStorage.theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col justify-between transition-colors duration-300">
+
+  <!-- HEADER INSTITUCIONAL -->
+  <header class="bg-gradient-to-r from-[#0B7BAF] via-[#08618B] to-[#054869] text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      
+      <div class="flex items-center space-x-4">
+        <img src="./logo_inta.png" alt="Logo INTA" class="h-14 bg-white p-1 rounded-lg shadow-md transition-transform hover:scale-105" onerror="this.style.display='none'">
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-bold tracking-tight">Resumen Climatológico Mensual y Anual</h1>
+            <span class="bg-sky-400/20 text-sky-200 text-[11px] font-semibold px-2 py-0.5 rounded-full border border-sky-300/30">ICAMPO519</span>
+          </div>
+          <p class="text-blue-100 text-xs font-medium">Escuela N° 4752 Aráoz Costas — Campo Quijano, Salta</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="theme-toggle" type="button" aria-label="Cambiar Tema" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-blue-100 border border-white/20 transition-all focus:outline-none focus:ring-2 focus:ring-white/50">
+          <i id="theme-toggle-dark-icon" data-feather="moon" class="hidden h-5 w-5"></i>
+          <i id="theme-toggle-light-icon" data-feather="sun" class="hidden h-5 w-5 text-amber-300"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- NAVBAR DE NAVEGACIÓN -->
+    <nav class="bg-black/20 backdrop-blur-md border-t border-white/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between overflow-x-auto py-2 text-xs font-medium gap-2 no-scrollbar whitespace-nowrap">
+          
+          <div class="flex items-center gap-2">
+            <a href="index.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold transition-all shadow-sm">
+              <i data-feather="home" class="h-3.5 w-3.5 text-sky-300"></i> Principal
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+
+    <!-- SECCIÓN 1: RESUMEN DEL MES EN CURSO -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">Balance Estadístico</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mt-0.5">
+            <i data-feather="calendar" class="text-sky-500 h-6 w-6"></i>
+            <span id="label-mes-actual">Mes en Curso</span>
+          </h2>
+        </div>
+
+        <!-- Indicador de total de días registrados -->
+        <div class="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 text-xs font-semibold flex items-center gap-2">
+          <i data-feather="database" class="w-4 h-4"></i>
+          <span id="badge-total-dias">Cargando base histórica...</span>
+        </div>
+      </div>
+
+      <!-- Métricas Resumidas del Mes -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+          <span class="text-[11px] text-slate-400 font-bold uppercase">Lluvia Total del Mes</span>
+          <p id="mes-lluvia-total" class="text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">-- mm</p>
+          <span id="mes-dias-lluvia" class="text-[11px] text-slate-500">-- días con lluvia</span>
+        </div>
+
+        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+          <span class="text-[11px] text-slate-400 font-bold uppercase">Temp. Media Mensual</span>
+          <p id="mes-temp-media" class="text-2xl font-extrabold text-amber-500 mt-1">-- °C</p>
+          <span class="text-[11px] text-slate-500">Promedio de registros diarios</span>
+        </div>
+
+        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+          <span class="text-[11px] text-slate-400 font-bold uppercase">Extrema Máxima</span>
+          <p id="mes-temp-max" class="text-2xl font-extrabold text-red-500 mt-1">-- °C</p>
+          <span id="mes-temp-max-fecha" class="text-[11px] text-slate-500">Fecha: --</span>
+        </div>
+
+        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+          <span class="text-[11px] text-slate-400 font-bold uppercase">Extrema Mínima</span>
+          <p id="mes-temp-min" class="text-2xl font-extrabold text-sky-500 mt-1">-- °C</p>
+          <span id="mes-temp-min-fecha" class="text-[11px] text-slate-500">Fecha: --</span>
+        </div>
+      </div>
+
+      <!-- Gráficos del Mes (Hietograma y Temperaturas) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Hietograma de Lluvias -->
+        <div class="border border-slate-200 dark:border-slate-700/60 rounded-xl p-4 bg-white dark:bg-slate-800/80">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
+            <i data-feather="cloud-rain" class="w-4 h-4 text-blue-500"></i> Hietograma Mensual (Precipitación por Día)
+          </h4>
+          <div class="h-60 relative w-full">
+            <canvas id="chart-mes-lluvia"></canvas>
+          </div>
+        </div>
+
+        <!-- Curva Térmica Diaria -->
+        <div class="border border-slate-200 dark:border-slate-700/60 rounded-xl p-4 bg-white dark:bg-slate-800/80">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
+            <i data-feather="trending-up" class="w-4 h-4 text-amber-500"></i> Máximas y Mínimas Diarias (°C)
+          </h4>
+          <div class="h-60 relative w-full">
+            <canvas id="chart-mes-temp"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLA TIPO NOAA DE DÍAS DEL MES -->
+      <div class="overflow-x-auto no-scrollbar">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
+          <i data-feather="file-text" class="w-4 h-4 text-sky-500"></i> Registro Diario Detallado (Estilo Informe NOAA)
+        </h4>
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
+            <tr>
+              <th class="p-2.5">Fecha</th>
+              <th class="p-2.5">Temp Máx (°C)</th>
+              <th class="p-2.5">Temp Mín (°C)</th>
+              <th class="p-2.5">Temp Media (°C)</th>
+              <th class="p-2.5">Humedad (%)</th>
+              <th class="p-2.5">Presión (hPa)</th>
+              <th class="p-2.5">Viento Máx (km/h)</th>
+              <th class="p-2.5">Ráfaga Máx (km/h)</th>
+              <th class="p-2.5">Lluvia (mm)</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-historico-body" class="divide-y divide-slate-100 dark:divide-slate-700/40 text-slate-700 dark:text-slate-200 font-medium">
+            <tr>
+              <td colspan="9" class="p-4 text-center text-slate-400">Cargando datos climáticos...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER INSTITUCIONAL (IGUAL A EL BRETE) -->
+  <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700/60 py-8 mt-6 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <div class="flex justify-center items-center">
+        <a href="https://www.argentina.gob.ar/economia" target="_blank">
+          <img src="MECON-Agricultura-BLANCO.png" alt="Secretaría de Agricultura, Ganadería y Pesca" class="h-16 md:h-20 w-auto opacity-90 hover:opacity-100 transition">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Theme toggle
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const darkIcon = document.getElementById('theme-toggle-dark-icon');
+    const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+    function updateIcons() {
+      if (document.documentElement.classList.contains('dark')) {
+        lightIcon.classList.remove('hidden');
+        darkIcon.classList.add('hidden');
+      } else {
+        lightIcon.classList.add('hidden');
+        darkIcon.classList.remove('hidden');
+      }
+    }
+    updateIcons();
+
+    themeToggleBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      updateIcons();
+    });
+
+    let chartLluviaMes, chartTempMes;
+
+    async function cargarHistorico() {
+      try {
+        const res = await fetch('historico_diario.csv?t=' + Date.now());
+        if (!res.ok) throw new Error("No se pudo cargar historico_diario.csv");
+        const csvText = await res.text();
+        const filas = parseCSV(csvText);
+
+        procesarYRenderizar(filas);
+      } catch (e) {
+        console.warn("Aviso:", e);
+      }
+    }
+
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(',');
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const vals = lines[i].split(',');
+        const obj = {};
+        headers.forEach((h, idx) => {
+          obj[h.trim()] = vals[idx] !== undefined ? vals[idx].trim() : '';
+        });
+        result.push(obj);
+      }
+      return result;
+    }
+
+    function procesarYRenderizar(filas) {
+      document.getElementById('badge-total-dias').innerText = `${filas.length} día(s) registrado(s)`;
+
+      const tbody = document.getElementById('tabla-historico-body');
+      if (filas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">Sin registros históricos aún.</td></tr>`;
+        return;
+      }
+
+      // Ordenar cronológico inverso para tabla
+      const filasOrdenadas = [...filas].reverse();
+      tbody.innerHTML = filasOrdenadas.map(f => {
+        const lluvia = parseFloat(f.Lluvia_Total) || 0;
+        return `
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+            <td class="p-2.5 font-semibold text-sky-600 dark:text-sky-400">${f.Fecha}</td>
+            <td class="p-2.5 font-bold text-red-500">${f.Temp_Max} °C</td>
+            <td class="p-2.5 font-bold text-sky-500">${f.Temp_Min} °C</td>
+            <td class="p-2.5">${f.Temp_Media} °C</td>
+            <td class="p-2.5">${f.Humedad_Min}% - ${f.Humedad_Max}%</td>
+            <td class="p-2.5">${f.Presion_Min} - ${f.Presion_Max}</td>
+            <td class="p-2.5 text-emerald-600 dark:text-emerald-400 font-semibold">${f.Viento_Max}</td>
+            <td class="p-2.5 text-amber-500 font-semibold">${f.Rafaga_Max}</td>
+            <td class="p-2.5 font-bold ${lluvia > 0 ? 'text-blue-600 dark:text-blue-400 font-extrabold' : 'text-slate-400'}">${lluvia.toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      // Estadísticas
+      let totalLluvia = 0;
+      let diasConLluvia = 0;
+      let sumaTempMedias = 0;
+      let absMaxTemp = -999;
+      let absMinTemp = 999;
+      let fechaMax = '';
+      let fechaMin = '';
+
+      const labels = [];
+      const dataLluvias = [];
+      const dataMax = [];
+      const dataMin = [];
+      const dataMed = [];
+
+      filas.forEach(f => {
+        const ll = parseFloat(f.Lluvia_Total) || 0;
+        const tMax = parseFloat(f.Temp_Max);
+        const tMin = parseFloat(f.Temp_Min);
+        const tMed = parseFloat(f.Temp_Media);
+
+        totalLluvia += ll;
+        if (ll > 0.2) diasConLluvia++;
+
+        if (!isNaN(tMed)) sumaTempMedias += tMed;
+        if (!isNaN(tMax) && tMax > absMaxTemp) {
+          absMaxTemp = tMax;
+          fechaMax = f.Fecha;
+        }
+        if (!isNaN(tMin) && tMin < absMinTemp) {
+          absMinTemp = tMin;
+          fechaMin = f.Fecha;
+        }
+
+        labels.push(f.Fecha.substring(5)); // MM-DD
+        dataLluvias.push(ll);
+        dataMax.push(tMax);
+        dataMin.push(tMin);
+        dataMed.push(tMed);
+      });
+
+      const tempMediaMensual = filas.length > 0 ? (sumaTempMedias / filas.length).toFixed(1) : '--';
+
+      document.getElementById('mes-lluvia-total').innerText = totalLluvia.toFixed(1) + ' mm';
+      document.getElementById('mes-dias-lluvia').innerText = `${diasConLluvia} día(s) con lluvia`;
+      document.getElementById('mes-temp-media').innerText = tempMediaMensual + ' °C';
+      document.getElementById('mes-temp-max').innerText = (absMaxTemp > -900 ? absMaxTemp.toFixed(1) : '--') + ' °C';
+      document.getElementById('mes-temp-max-fecha').innerText = `Fecha: ${fechaMax || '--'}`;
+      document.getElementById('mes-temp-min').innerText = (absMinTemp < 900 ? absMinTemp.toFixed(1) : '--') + ' °C';
+      document.getElementById('mes-temp-min-fecha').innerText = `Fecha: ${fechaMin || '--'}`;
+
+      renderGraficos(labels, dataLluvias, dataMax, dataMin, dataMed);
+    }
+
+    function renderGraficos(labels, lluvias, maxs, mins, meds) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+
+      const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: textColor, font: { size: 11, family: 'Inter' } } } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }
+        }
+      };
+
+      if (chartLluviaMes) chartLluviaMes.destroy();
+      chartLluviaMes = new Chart(document.getElementById('chart-mes-lluvia'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Precipitación Diaria (mm)',
+            data: lluvias,
+            backgroundColor: '#3b82f6',
+            borderRadius: 4
+          }]
+        },
+        options: commonOptions
+      });
+
+      if (chartTempMes) chartTempMes.destroy();
+      chartTempMes = new Chart(document.getElementById('chart-mes-temp'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Máxima Diaria (°C)',
+              data: maxs,
+              borderColor: '#ef4444',
+              backgroundColor: 'transparent',
+              tension: 0.2,
+              pointRadius: 3
+            },
+            {
+              label: 'Media Diaria (°C)',
+              data: meds,
+              borderColor: '#f59e0b',
+              borderDash: [3, 3],
+              backgroundColor: 'transparent',
+              tension: 0.2,
+              pointRadius: 2
+            },
+            {
+              label: 'Mínima Diaria (°C)',
+              data: mins,
+              borderColor: '#0284c7',
+              backgroundColor: 'transparent',
+              tension: 0.2,
+              pointRadius: 3
+            }
+          ]
+        },
+        options: commonOptions
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      feather.replace();
+      cargarHistorico();
+    });
+  </script>
+</body>
+</html>

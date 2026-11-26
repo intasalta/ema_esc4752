@@ -1,0 +1,45 @@
+{
+  "estacion": {
+    "id": "ICAMPO519",
+    "nombre": "Esc. 4752 Aráoz Costas",
+    "ubicacion": "Campo Quijano, Salta - Argentina",
+    "barrio": "Campo Quijano",
+    "pais": "AR",
+    "latitud": -24.911553,
+    "longitud": -65.632192,
+    "elevacion_m": 453.5,
+    "software": "EasyWeather V9.3.0",
+    "actualizado_utc": "2026-11-26T20:45:22Z",
+    "actualizado_local": "2026-11-26 17:45:22",
+    "epoch": 1795725922,
+    "estado_qc": -1
+  },
+  "clima_actual": {
+    "temperatura": 15.8,
+    "sensacion_termica": 15.8,
+    "indice_calor": 15.8,
+    "punto_rocio": 14.4,
+    "humedad": 91.0,
+    "presion": 1009.48,
+    "viento_velocidad": 1.1,
+    "viento_rafaga": 2.6,
+    "viento_direccion_grados": 45,
+    "viento_direccion_cardinal": "NE",
+    "lluvia_tasa": null,
+    "lluvia_hoy": 2.29,
+    "radiacion_solar": null,
+    "uv": null
+  },
+  "extremos_hoy": {
+    "temperatura_max": 16.3,
+    "temperatura_min": 14.9,
+    "temperatura_media": 15.6,
+    "humedad_max": 92.8,
+    "humedad_min": 89.0,
+    "presion_max": 1013.55,
+    "presion_min": 1010.5,
+    "viento_maximo": 7.2,
+    "rafaga_maxima": 13.4,
+    "lluvia_total": 2.29
+  }
+}

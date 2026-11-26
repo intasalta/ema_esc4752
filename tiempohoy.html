@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Tiempo Hoy - Esc 4752 Campo Quijano</title>
+
+  <!-- PWA Web App Manifest -->
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./logo_inta.png" />
+  <link rel="apple-touch-icon" href="./logo_inta.png" />
+  <meta name="theme-color" content="#090d16" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      background: radial-gradient(circle at top, #111827 0%, #090d16 100%);
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      padding-top: max(0.75rem, env(safe-area-inset-top));
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+      padding-left: max(0.85rem, env(safe-area-inset-left));
+      padding-right: max(0.85rem, env(safe-area-inset-right));
+    }
+    .glass-card {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+    }
+    .glass-hero {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.5);
+    }
+    .pulse-dot {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full flex flex-col justify-between max-w-md mx-auto space-y-3">
+
+  <!-- ENCABEZADO COMPACTO -->
+  <header class="glass-card rounded-2xl px-3.5 py-2.5 flex items-center justify-between border-slate-800/80">
+    <div class="flex items-center gap-2.5">
+      <div class="bg-white/95 p-1 rounded-xl shadow-sm flex items-center justify-center w-9 h-9 shrink-0">
+        <img src="./logo_inta.png" alt="INTA" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'" />
+      </div>
+      <div class="leading-tight">
+        <div class="flex items-center gap-1.5">
+          <span class="text-sm font-bold text-white tracking-wide">Esc. 4752 Aráoz Costas - Quijano</span>
+          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-sky-950/80 text-sky-300 border border-sky-600/30">Salta</span>
+        </div>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot inline-block"></span>
+          <p id="last-update" class="text-[11px] text-slate-400 font-medium">Actualizando...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <button id="btn-refresh" onclick="recargarDatos()" title="Actualizar datos" class="p-2.5 bg-slate-800/90 hover:bg-slate-700 active:scale-95 transition-all rounded-xl text-slate-300 hover:text-white border border-slate-700/50 shadow-inner">
+        <i data-lucide="refresh-cw" id="icon-refresh" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="flex flex-col space-y-3 flex-1">
+
+    <!-- HERO CARD: TEMPERATURA + EXTREMOS -->
+    <div class="glass-hero rounded-3xl p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between">
+      <div class="absolute -right-8 -top-8 w-36 h-36 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-8 -bottom-8 w-36 h-36 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Fila superior -->
+      <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center gap-1.5">
+          <i data-lucide="thermometer" class="w-4 h-4 text-amber-400"></i>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Temperatura Actual</span>
+        </div>
+        <span id="hora-registro" class="text-[11px] text-slate-400 font-medium bg-slate-800/70 px-2 py-0.5 rounded-full border border-slate-700/60">--:-- hs</span>
+      </div>
+
+      <!-- Temperatura Gigante -->
+      <div class="my-3 flex items-baseline justify-between">
+        <div class="flex items-baseline">
+          <span id="temp-val" class="text-6xl font-extrabold tracking-tight text-white drop-shadow-sm">--</span>
+          <span class="text-2xl font-bold text-sky-400 ml-1">°C</span>
+        </div>
+
+        <div class="text-right">
+          <p class="text-[11px] text-slate-400 uppercase font-semibold">Sensación Térmica</p>
+          <p id="sensacion-val" class="text-lg font-bold text-slate-200">-- °C</p>
+        </div>
+      </div>
+
+      <!-- Extremos de hoy -->
+      <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-700/60 text-xs">
+        <div class="bg-slate-800/60 p-2 rounded-xl border border-slate-700/40 flex items-center justify-between">
+          <div class="flex items-center gap-1 text-sky-400">
+            <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+            <span class="text-[10px] font-semibold uppercase">Mínima</span>
+          </div>
+          <span id="temp-min" class="font-bold text-white">-- °C</span>
+        </div>
+
+        <div class="bg-slate-800/60 p-2 rounded-xl border border-slate-700/40 flex items-center justify-between">
+          <div class="flex items-center gap-1 text-red-400">
+            <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+            <span class="text-[10px] font-semibold uppercase">Máxima</span>
+          </div>
+          <span id="temp-max" class="font-bold text-white">-- °C</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TARJETAS SECUNDARIAS (GRID 2x2) -->
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Humedad -->
+      <div class="glass-card rounded-2xl p-3 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase">Humedad</span>
+          <i data-lucide="droplet" class="w-4 h-4 text-sky-400"></i>
+        </div>
+        <div class="my-2">
+          <span id="humedad-val" class="text-3xl font-extrabold text-white">--</span>
+          <span class="text-sm font-semibold text-sky-400">%</span>
+        </div>
+        <div class="flex justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+          <span>Pto Rocío:</span>
+          <span id="dewpt-val" class="font-bold text-slate-200">-- °C</span>
+        </div>
+      </div>
+
+      <!-- Viento -->
+      <div class="glass-card rounded-2xl p-3 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase">Viento</span>
+          <i data-lucide="wind" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div class="my-2 flex items-baseline justify-between">
+          <div>
+            <span id="viento-val" class="text-3xl font-extrabold text-white">--</span>
+            <span class="text-xs font-semibold text-emerald-400">km/h</span>
+          </div>
+          <span id="viento-dir" class="text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">--</span>
+        </div>
+        <div class="flex justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+          <span>Ráfaga máx:</span>
+          <span id="rafaga-max-val" class="font-bold text-slate-200">-- km/h</span>
+        </div>
+      </div>
+
+      <!-- Lluvia Hoy -->
+      <div class="glass-card rounded-2xl p-3 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase">Lluvia Hoy</span>
+          <i data-lucide="cloud-rain" class="w-4 h-4 text-blue-400"></i>
+        </div>
+        <div class="my-2">
+          <span id="lluvia-val" class="text-3xl font-extrabold text-blue-400">--</span>
+          <span class="text-xs font-semibold text-slate-400">mm</span>
+        </div>
+        <div class="flex justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+          <span>Intensidad:</span>
+          <span id="lluvia-tasa" class="font-bold text-slate-200">0.0 mm/h</span>
+        </div>
+      </div>
+
+      <!-- Presión Barométrica -->
+      <div class="glass-card rounded-2xl p-3 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase">Presión</span>
+          <i data-lucide="gauge" class="w-4 h-4 text-purple-400"></i>
+        </div>
+        <div class="my-2">
+          <span id="presion-val" class="text-2xl font-extrabold text-white">--</span>
+          <span class="text-[10px] font-semibold text-slate-400">hPa</span>
+        </div>
+        <div class="flex justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+          <span>Altitud:</span>
+          <span class="font-bold text-slate-200">1520 msnm</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTONES DE NAVEGACIÓN -->
+    <div class="grid grid-cols-2 gap-2 pt-2">
+      <a href="index.html" class="glass-card hover:bg-slate-800/80 active:scale-95 transition-all p-3 rounded-2xl flex items-center justify-center gap-2 text-xs font-semibold text-sky-400 border-sky-500/20">
+        <i data-lucide="layout" class="w-4 h-4"></i>
+        <span>Dashboard Completo</span>
+      </a>
+
+      <a href="resumen.html" class="glass-card hover:bg-slate-800/80 active:scale-95 transition-all p-3 rounded-2xl flex items-center justify-center gap-2 text-xs font-semibold text-amber-400 border-amber-500/20">
+        <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+        <span>Resumen Climático</span>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- PIE DE PÁGINA MÓVIL -->
+  <footer class="text-center py-2 text-[11px] text-slate-500">
+    <p>INTA EEA Salta &bull; Estación ICAMPO519</p>
+  </footer>
+
+  <script>
+    async function recargarDatos() {
+      const icon = document.getElementById('icon-refresh');
+      if (icon) icon.classList.add('animate-spin');
+
+      try {
+        const res = await fetch('datos_actuales.json?t=' + Date.now());
+        if (!res.ok) throw new Error("No se pudo cargar datos");
+        const data = await res.json();
+
+        const est = data.estacion || {};
+        const act = data.clima_actual || {};
+        const ext = data.extremos_hoy || {};
+
+        document.getElementById('last-update').innerText = 'Act: ' + (est.actualizado_local || '--');
+        document.getElementById('hora-registro').innerText = (est.actualizado_local ? est.actualizado_local.split(' ')[1] : '--') + ' hs';
+
+        // Temperatura
+        document.getElementById('temp-val').innerText = act.temperatura !== null ? act.temperatura.toFixed(1) : '--';
+        document.getElementById('sensacion-val').innerText = (act.sensacion_termica !== null ? act.sensacion_termica.toFixed(1) : '--') + ' °C';
+        document.getElementById('temp-min').innerText = (ext.temperatura_min !== null ? ext.temperatura_min.toFixed(1) : '--') + ' °C';
+        document.getElementById('temp-max').innerText = (ext.temperatura_max !== null ? ext.temperatura_max.toFixed(1) : '--') + ' °C';
+
+        // Humedad
+        document.getElementById('humedad-val').innerText = act.humedad !== null ? Math.round(act.humedad) : '--';
+        document.getElementById('dewpt-val').innerText = (act.punto_rocio !== null ? act.punto_rocio.toFixed(1) : '--') + ' °C';
+
+        // Viento
+        document.getElementById('viento-val').innerText = act.viento_velocidad !== null ? act.viento_velocidad.toFixed(1) : '0.0';
+        document.getElementById('viento-dir').innerText = act.viento_direccion_cardinal || '---';
+        document.getElementById('rafaga-max-val').innerText = (ext.rafaga_maxima !== null ? ext.rafaga_maxima.toFixed(1) : '0.0') + ' km/h';
+
+        // Lluvia y Presión
+        document.getElementById('lluvia-val').innerText = ext.lluvia_total !== null ? ext.lluvia_total.toFixed(2) : '0.00';
+        document.getElementById('lluvia-tasa').innerText = (act.lluvia_tasa ? act.lluvia_tasa.toFixed(1) : '0.0') + ' mm/h';
+        document.getElementById('presion-val').innerText = act.presion !== null ? act.presion.toFixed(1) : '--';
+
+      } catch (e) {
+        console.warn("Aviso:", e);
+      } finally {
+        setTimeout(() => {
+          if (icon) icon.classList.remove('animate-spin');
+        }, 500);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      recargarDatos();
+      setInterval(recargarDatos, 60000); // Actualiza cada minuto
+    });
+  </script>
+</body>
+</html>

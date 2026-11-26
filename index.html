@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estación Meteorológica - Esc. 4752 Aráoz Costas (Campo Quijano)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <!-- Chart.js & Feather Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .pulse-dot {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .compass-dial {
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  </style>
+
+  <script>
+    if (localStorage.theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col justify-between transition-colors duration-300">
+
+  <!-- HEADER INSTITUCIONAL -->
+  <header class="bg-gradient-to-r from-[#0B7BAF] via-[#08618B] to-[#054869] text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      
+      <div class="flex items-center space-x-4">
+        <img src="./logo_inta.png" alt="Logo INTA" class="h-14 bg-white p-1 rounded-lg shadow-md transition-transform hover:scale-105" onerror="this.style.display='none'">
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-bold tracking-tight">Estación Meteorológica Automática</h1>
+            <span class="bg-sky-400/20 text-sky-200 text-[11px] font-semibold px-2 py-0.5 rounded-full border border-sky-300/30">ICAMPO519</span>
+          </div>
+          <p class="text-blue-100 text-xs font-medium">Escuela N° 4752 Aráoz Costas — Campo Quijano, Salta</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:block text-right text-xs bg-black/20 backdrop-blur-md p-2.5 rounded-xl border border-white/10">
+          <p class="font-semibold text-blue-100 flex items-center justify-end gap-1">
+            <i data-feather="map-pin" class="h-3.5 w-3.5 text-sky-300"></i> Lat -24.91155 | Long -65.63219
+          </p>
+          <p class="text-blue-200 text-[11px] mt-0.5" id="station-elev-header">Altitud: 1520 msnm | Wunderground PWS</p>
+        </div>
+
+        <!-- Botón Modo Oscuro / Claro -->
+        <button id="theme-toggle" type="button" aria-label="Cambiar Tema" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-blue-100 border border-white/20 transition-all focus:outline-none focus:ring-2 focus:ring-white/50">
+          <i id="theme-toggle-dark-icon" data-feather="moon" class="hidden h-5 w-5"></i>
+          <i id="theme-toggle-light-icon" data-feather="sun" class="hidden h-5 w-5 text-amber-300"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- NAVBAR DE NAVEGACIÓN -->
+    <nav class="bg-black/20 backdrop-blur-md border-t border-white/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between overflow-x-auto py-2 text-xs font-medium gap-2 no-scrollbar whitespace-nowrap">
+          
+          <div class="flex items-center gap-2">
+            <a href="index.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/25 text-white font-semibold shadow-sm">
+              <i data-feather="layout" class="h-3.5 w-3.5 text-sky-300"></i> Dashboard
+            </a>
+
+            <a href="resumen.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all shadow-sm">
+              <i data-feather="bar-chart-2" class="h-3.5 w-3.5 text-amber-300"></i> Resumen Climático
+            </a>
+
+            <a href="historico_diario.xlsx" download class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all shadow-sm" title="Descargar histórico diario en formato Excel (XLSX)">
+              <i data-feather="file-text" class="h-3.5 w-3.5 text-emerald-300"></i> Datos Históricos (XLSX)
+            </a>
+
+            <a href="https://www.wunderground.com/dashboard/pws/ICAMPO519" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all shadow-sm">
+              <i data-feather="external-link" class="h-3.5 w-3.5 text-purple-200"></i> Ver en Wunderground
+            </a>
+          </div>
+
+          <!-- BOTÓN ¿QUIÉNES SOMOS? -->
+          <button id="info-modal-btn" type="button" class="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-blue-100 border border-white/20 text-xs font-semibold transition-all">
+            <i data-feather="info" class="h-3.5 w-3.5"></i>
+            <span>¿Quiénes Somos?</span>
+          </button>
+
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL / DASHBOARD -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+
+    <!-- BARRA DE ESTADO / ÚLTIMA ACTUALIZACIÓN -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 md:p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors">
+      <div class="flex items-center gap-3">
+        <span class="w-3 h-3 rounded-full bg-emerald-500 pulse-dot inline-block shadow-sm"></span>
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">Estado de Estación &bull; Conectada</span>
+          <h2 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <i data-feather="clock" class="text-sky-500 h-4 w-4"></i>
+            <span id="label-hora-actualizado">Cargando datos...</span>
+          </h2>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="recargarDatos()" title="Recargar mediciones" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/70 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all">
+          <i id="btn-refresh-icon" data-feather="refresh-cw" class="h-3.5 w-3.5 text-sky-500"></i> Actualizar
+        </button>
+      </div>
+    </div>
+
+    <!-- TARJETAS PRINCIPALES DE MONITOREO (GRID 4 COLUMNAS) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <!-- TARJETA 1: TEMPERATURA -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Temperatura</span>
+          <div class="p-2 bg-amber-500/10 text-amber-500 rounded-xl">
+            <i data-feather="thermometer" class="h-5 w-5"></i>
+          </div>
+        </div>
+
+        <div class="my-2">
+          <div class="flex items-baseline gap-1">
+            <span id="val-temp" class="text-4xl font-extrabold text-slate-900 dark:text-white">--</span>
+            <span class="text-xl font-bold text-slate-500 dark:text-slate-400">°C</span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Sensación: <span id="val-sensacion" class="font-semibold text-slate-700 dark:text-slate-300">-- °C</span>
+          </p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <span class="text-[10px] text-blue-500 dark:text-blue-400 font-semibold uppercase">Mínima Hoy</span>
+            <p id="val-temp-min" class="font-bold text-slate-800 dark:text-slate-200">-- °C</p>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-red-500 dark:text-red-400 font-semibold uppercase">Máxima Hoy</span>
+            <p id="val-temp-max" class="font-bold text-slate-800 dark:text-slate-200">-- °C</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TARJETA 2: HUMEDAD Y PUNTO DE ROCÍO -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Humedad</span>
+          <div class="p-2 bg-sky-500/10 text-sky-500 rounded-xl">
+            <i data-feather="droplet" class="h-5 w-5"></i>
+          </div>
+        </div>
+
+        <div class="my-2">
+          <div class="flex items-baseline gap-1">
+            <span id="val-humedad" class="text-4xl font-extrabold text-slate-900 dark:text-white">--</span>
+            <span class="text-xl font-bold text-slate-500 dark:text-slate-400">%</span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Pto. Rocío: <span id="val-dewpt" class="font-semibold text-slate-700 dark:text-slate-300">-- °C</span>
+          </p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase">Mínima Hoy</span>
+            <p id="val-hum-min" class="font-bold text-slate-800 dark:text-slate-200">-- %</p>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase">Máxima Hoy</span>
+            <p id="val-hum-max" class="font-bold text-slate-800 dark:text-slate-200">-- %</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TARJETA 3: VIENTO Y RÁFAGAS -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Viento</span>
+          <div class="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl">
+            <i data-feather="wind" class="h-5 w-5"></i>
+          </div>
+        </div>
+
+        <div class="my-2 flex items-center justify-between">
+          <div>
+            <div class="flex items-baseline gap-1">
+              <span id="val-viento" class="text-4xl font-extrabold text-slate-900 dark:text-white">--</span>
+              <span class="text-sm font-bold text-slate-500 dark:text-slate-400">km/h</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Dirección: <span id="val-viento-dir" class="font-bold text-sky-600 dark:text-sky-400">--</span> (<span id="val-viento-deg">0</span>°)
+            </p>
+          </div>
+
+          <!-- Brújula / Dial de orientación -->
+          <div class="relative w-12 h-12 rounded-full border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center bg-slate-50 dark:bg-slate-900/50">
+            <span class="absolute top-0.5 text-[8px] font-bold text-slate-400">N</span>
+            <div id="compass-arrow" class="compass-dial w-full h-full flex items-center justify-center">
+              <i data-feather="navigation" class="w-5 h-5 text-emerald-500 fill-emerald-500"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase">Ráfaga Actual</span>
+            <p id="val-rafaga-act" class="font-bold text-slate-800 dark:text-slate-200">-- km/h</p>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase">Ráfaga Máx Hoy</span>
+            <p id="val-rafaga-max" class="font-bold text-slate-800 dark:text-slate-200">-- km/h</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TARJETA 4: PRECIPITACIONES Y PRESIÓN -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Precipitación Hoy</span>
+          <div class="p-2 bg-blue-500/10 text-blue-500 rounded-xl">
+            <i data-feather="cloud-rain" class="h-5 w-5"></i>
+          </div>
+        </div>
+
+        <div class="my-2">
+          <div class="flex items-baseline gap-1">
+            <span id="val-lluvia" class="text-4xl font-extrabold text-blue-600 dark:text-blue-400">--</span>
+            <span class="text-xl font-bold text-slate-500 dark:text-slate-400">mm</span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Presión: <span id="val-presion" class="font-semibold text-slate-700 dark:text-slate-300">-- hPa</span>
+          </p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase">Presión Mín</span>
+            <p id="val-pres-min" class="font-bold text-slate-800 dark:text-slate-200">-- hPa</p>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase">Presión Máx</span>
+            <p id="val-pres-max" class="font-bold text-slate-800 dark:text-slate-200">-- hPa</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECCIÓN DE GRÁFICOS DINÁMICOS DEL DÍA -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- GRÁFICO 1: TEMPERATURA Y SENSACIÓN TÉRMICA -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <i data-feather="activity" class="text-amber-500 h-5 w-5"></i>
+            <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Evolución Térmica Hoy</h3>
+          </div>
+          <span class="text-[11px] text-slate-400 font-medium">Intervalos 5 min</span>
+        </div>
+        <div class="relative h-64 w-full">
+          <canvas id="chart-temperatura"></canvas>
+        </div>
+      </div>
+
+      <!-- GRÁFICO 2: PRESIÓN Y HUMEDAD -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <i data-feather="bar-chart" class="text-sky-500 h-5 w-5"></i>
+            <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Humedad y Presión</h3>
+          </div>
+          <span class="text-[11px] text-slate-400 font-medium">Registros del día</span>
+        </div>
+        <div class="relative h-64 w-full">
+          <canvas id="chart-humedad-presion"></canvas>
+        </div>
+      </div>
+
+      <!-- GRÁFICO 3: VIENTO Y RÁFAGAS -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <i data-feather="wind" class="text-emerald-500 h-5 w-5"></i>
+            <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Velocidad del Viento y Ráfagas (km/h)</h3>
+          </div>
+          <span class="text-[11px] text-slate-400 font-medium">km/h</span>
+        </div>
+        <div class="relative h-64 w-full">
+          <canvas id="chart-viento"></canvas>
+        </div>
+      </div>
+
+      <!-- GRÁFICO 4: LLUVIA ACUMULADA -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <i data-feather="cloud-drizzle" class="text-blue-500 h-5 w-5"></i>
+            <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Precipitación Acumulada (mm)</h3>
+          </div>
+          <span class="text-[11px] text-slate-400 font-medium">Milímetros</span>
+        </div>
+        <div class="relative h-64 w-full">
+          <canvas id="chart-lluvia"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TABLA DE ÚLTIMAS OBSERVACIONES -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <i data-feather="list" class="text-sky-500 h-5 w-5"></i>
+          <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Últimas Lecturas Registradas Hoy</h3>
+        </div>
+        <span class="text-[11px] text-slate-400">Orden cronológico descendente</span>
+      </div>
+
+      <div class="overflow-x-auto no-scrollbar">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
+            <tr>
+              <th class="p-2.5">Hora</th>
+              <th class="p-2.5">Temp (°C)</th>
+              <th class="p-2.5">Humedad (%)</th>
+              <th class="p-2.5">Pto Rocío (°C)</th>
+              <th class="p-2.5">Viento (km/h)</th>
+              <th class="p-2.5">Ráfaga (km/h)</th>
+              <th class="p-2.5">Presión (hPa)</th>
+              <th class="p-2.5">Lluvia Hoy (mm)</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-ultimas-lecturas" class="divide-y divide-slate-100 dark:divide-slate-700/40 text-slate-700 dark:text-slate-200 font-medium">
+            <tr>
+              <td colspan="8" class="p-4 text-center text-slate-400">Cargando registros...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER INSTITUCIONAL (IGUAL A EL BRETE) -->
+  <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700/60 py-8 mt-6 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <div class="flex justify-center items-center">
+        <a href="https://www.argentina.gob.ar/economia" target="_blank">
+          <img src="MECON-Agricultura-BLANCO.png" alt="Secretaría de Agricultura, Ganadería y Pesca" class="h-16 md:h-20 w-auto opacity-90 hover:opacity-100 transition">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL ¿QUIÉNES SOMOS? -->
+  <div id="info-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 sm:p-7 w-full max-w-xl shadow-2xl relative text-slate-800 dark:text-slate-100 max-h-[90vh] overflow-y-auto no-scrollbar">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-sky-500/10 text-sky-500 rounded-xl">
+            <i data-feather="info" class="h-5 w-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">¿Quiénes Somos?</h3>
+            <p class="text-[11px] text-slate-400">Esc. N° 4752 "Dody Aráoz Costas de Usandivaras" &bull; Proyecto MATTEO</p>
+          </div>
+        </div>
+        <button onclick="cerrarInfoModal()" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400">
+          <i data-feather="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-3.5 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+        <p>
+          La <strong>Escuela N° 4752 "Dody Aráoz Costas de Usandivaras"</strong> forma parte activa del <strong>Proyecto MATTEO</strong> (<em>Monitoreo Automático del Tiempo en la Tropósfera en Escuelas y Organismos</em>), una iniciativa educativa y de ciencia ciudadana enfocada en el registro meteorológico e hidrometeorológico, la prevención de riesgos ambientales (como inundaciones, sequías o incendios) y la articulación entre distintos niveles educativos.
+        </p>
+        <p>
+          En la provincia de Salta, esta propuesta se desarrolla en establecimientos escolares con el acompañamiento académico y de extensión de instituciones como la <strong>Universidad Católica de Salta (UCASAL)</strong>, el <strong>INTA</strong> y los equipos técnicos del proyecto. Entre sus actividades habituales se encuentran la capacitación docente, la elaboración de instrumental sencillo, y el registro y análisis de variables climáticas por parte de la comunidad educativa.
+        </p>
+        
+        <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-xs space-y-1">
+          <p class="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+            <i data-feather="map-pin" class="h-3.5 w-3.5 text-sky-500"></i> Estación Meteorológica Automática (EMA):
+          </p>
+          <p class="text-slate-600 dark:text-slate-400">
+            <strong>Ubicación:</strong> Intersección de Hugo Alarcón y Javier Pantaleón, Campo Quijano, Salta.
+          </p>
+          <p class="text-slate-600 dark:text-slate-400">
+            <strong>Coordenadas:</strong> -24.9114, -65.6326 &bull; <strong>ID Wunderground:</strong> ICAMPO519
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+        <button onclick="cerrarInfoModal()" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl text-xs transition">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGICA Y CHARTS -->
+  <script>
+    // Control Modo Oscuro / Claro
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const darkIcon = document.getElementById('theme-toggle-dark-icon');
+    const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+    function updateIcons() {
+      if (document.documentElement.classList.contains('dark')) {
+        lightIcon.classList.remove('hidden');
+        darkIcon.classList.add('hidden');
+      } else {
+        lightIcon.classList.add('hidden');
+        darkIcon.classList.remove('hidden');
+      }
+    }
+    updateIcons();
+
+    themeToggleBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      updateIcons();
+      actualizarGraficosEstilo();
+    });
+
+    // Control Modal Info
+    const infoModal = document.getElementById('info-modal');
+    document.getElementById('info-modal-btn').addEventListener('click', () => infoModal.classList.remove('hidden'));
+    function cerrarInfoModal() { infoModal.classList.add('hidden'); }
+
+    // Instancias de Gráficos
+    let chartTemp, chartHumPres, chartViento, chartLluvia;
+
+    async function recargarDatos() {
+      const btnIcon = document.getElementById('btn-refresh-icon');
+      btnIcon.classList.add('animate-spin');
+      try {
+        await cargarDatosActuales();
+        await cargarSerieHoy();
+      } catch (err) {
+        console.error("Error al recargar datos:", err);
+      } finally {
+        setTimeout(() => btnIcon.classList.remove('animate-spin'), 600);
+      }
+    }
+
+    async function cargarDatosActuales() {
+      try {
+        const res = await fetch('datos_actuales.json?t=' + Date.now());
+        if (!res.ok) throw new Error("No se pudo cargar datos_actuales.json");
+        const data = await res.json();
+        
+        const est = data.estacion || {};
+        const act = data.clima_actual || {};
+        const ext = data.extremos_hoy || {};
+
+        document.getElementById('label-hora-actualizado').innerText = 
+          (est.actualizado_local || 'Desconocida') + ' hs';
+        
+        if (est.elevacion_m) {
+          document.getElementById('station-elev-header').innerText = 
+            `Altitud: ${est.elevacion_m} msnm | ${est.software || 'Wunderground PWS'}`;
+        }
+
+        // Temperatura
+        document.getElementById('val-temp').innerText = act.temperatura !== null ? act.temperatura.toFixed(1) : '--';
+        document.getElementById('val-sensacion').innerText = (act.sensacion_termica !== null ? act.sensacion_termica.toFixed(1) : '--') + ' °C';
+        document.getElementById('val-temp-min').innerText = (ext.temperatura_min !== null ? ext.temperatura_min.toFixed(1) : '--') + ' °C';
+        document.getElementById('val-temp-max').innerText = (ext.temperatura_max !== null ? ext.temperatura_max.toFixed(1) : '--') + ' °C';
+
+        // Humedad
+        document.getElementById('val-humedad').innerText = act.humedad !== null ? Math.round(act.humedad) : '--';
+        document.getElementById('val-dewpt').innerText = (act.punto_rocio !== null ? act.punto_rocio.toFixed(1) : '--') + ' °C';
+        document.getElementById('val-hum-min').innerText = (ext.humedad_min !== null ? Math.round(ext.humedad_min) : '--') + ' %';
+        document.getElementById('val-hum-max').innerText = (ext.humedad_max !== null ? Math.round(ext.humedad_max) : '--') + ' %';
+
+        // Viento
+        document.getElementById('val-viento').innerText = act.viento_velocidad !== null ? act.viento_velocidad.toFixed(1) : '0.0';
+        document.getElementById('val-viento-dir').innerText = act.viento_direccion_cardinal || '---';
+        document.getElementById('val-viento-deg').innerText = act.viento_direccion_grados !== null ? act.viento_direccion_grados : '0';
+        document.getElementById('val-rafaga-act').innerText = (act.viento_rafaga !== null ? act.viento_rafaga.toFixed(1) : '0.0') + ' km/h';
+        document.getElementById('val-rafaga-max').innerText = (ext.rafaga_maxima !== null ? ext.rafaga_maxima.toFixed(1) : '0.0') + ' km/h';
+
+        // Rotar aguja brújula
+        const compass = document.getElementById('compass-arrow');
+        if (compass && act.viento_direccion_grados !== null) {
+          compass.style.transform = `rotate(${act.viento_direccion_grados}deg)`;
+        }
+
+        // Lluvia y Presión
+        document.getElementById('val-lluvia').innerText = ext.lluvia_total !== null ? ext.lluvia_total.toFixed(2) : '0.00';
+        document.getElementById('val-presion').innerText = (act.presion !== null ? act.presion.toFixed(1) : '--') + ' hPa';
+        document.getElementById('val-pres-min').innerText = (ext.presion_min !== null ? ext.presion_min.toFixed(1) : '--') + ' hPa';
+        document.getElementById('val-pres-max').innerText = (ext.presion_max !== null ? ext.presion_max.toFixed(1) : '--') + ' hPa';
+
+      } catch (e) {
+        console.warn("Aviso:", e);
+      }
+    }
+
+    async function cargarSerieHoy() {
+      try {
+        const res = await fetch('hoy_5min.json?t=' + Date.now());
+        if (!res.ok) return;
+        const obsList = await res.json();
+        if (!Array.isArray(obsList) || obsList.length === 0) return;
+
+        const labels = [];
+        const seriesTemp = [];
+        const seriesSens = [];
+        const seriesHum = [];
+        const seriesPres = [];
+        const seriesViento = [];
+        const seriesRafaga = [];
+        const seriesLluvia = [];
+
+        // Filtrar y ordenar
+        obsList.forEach(item => {
+          const horaLocal = item.obsTimeLocal ? item.obsTimeLocal.split(' ')[1].substring(0, 5) : '';
+          const m = item.metric || {};
+          const t = m.tempAvg !== null ? m.tempAvg : (m.tempHigh !== null ? m.tempHigh : null);
+          
+          if (t !== null && horaLocal) {
+            labels.push(horaLocal);
+            seriesTemp.push(t);
+            seriesSens.push(m.windchillAvg !== null ? m.windchillAvg : t);
+            seriesHum.push(item.humidityAvg !== null ? item.humidityAvg : item.humidityHigh);
+            seriesPres.push(m.pressureMin !== null ? m.pressureMin : m.pressureMax);
+            seriesViento.push(m.windspeedAvg !== null ? m.windspeedAvg : 0);
+            seriesRafaga.push(m.windgustHigh !== null ? m.windgustHigh : 0);
+            seriesLluvia.push(m.precipTotal !== null ? m.precipTotal : 0);
+          }
+        });
+
+        renderCharts(labels, seriesTemp, seriesSens, seriesHum, seriesPres, seriesViento, seriesRafaga, seriesLluvia);
+        renderTabla(obsList);
+
+      } catch (e) {
+        console.warn("Aviso al cargar serie hoy:", e);
+      }
+    }
+
+    function renderCharts(labels, sTemp, sSens, sHum, sPres, sViento, sRafaga, sLluvia) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+
+      const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: textColor, font: { size: 11, family: 'Inter' } } }
+        },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }
+        }
+      };
+
+      // Chart 1: Temp
+      if (chartTemp) chartTemp.destroy();
+      chartTemp = new Chart(document.getElementById('chart-temperatura'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Temperatura (°C)',
+              data: sTemp,
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245, 158, 11, 0.15)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 2
+            },
+            {
+              label: 'Sensación Térmica (°C)',
+              data: sSens,
+              borderColor: '#0284c7',
+              borderDash: [4, 4],
+              tension: 0.3,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: commonOptions
+      });
+
+      // Chart 2: Humedad y Presión
+      if (chartHumPres) chartHumPres.destroy();
+      chartHumPres = new Chart(document.getElementById('chart-humedad-presion'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Humedad (%)',
+              data: sHum,
+              borderColor: '#38bdf8',
+              backgroundColor: 'rgba(56, 189, 248, 0.1)',
+              yAxisID: 'yHum',
+              tension: 0.3,
+              pointRadius: 2
+            },
+            {
+              label: 'Presión (hPa)',
+              data: sPres,
+              borderColor: '#a855f7',
+              yAxisID: 'yPres',
+              tension: 0.3,
+              pointRadius: 2
+            }
+          ]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            x: commonOptions.scales.x,
+            yHum: {
+              type: 'linear',
+              position: 'left',
+              grid: { color: gridColor },
+              ticks: { color: textColor, callback: val => val + '%' }
+            },
+            yPres: {
+              type: 'linear',
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              ticks: { color: textColor, callback: val => val + ' hPa' }
+            }
+          }
+        }
+      });
+
+      // Chart 3: Viento
+      if (chartViento) chartViento.destroy();
+      chartViento = new Chart(document.getElementById('chart-viento'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Viento (km/h)',
+              data: sViento,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 2
+            },
+            {
+              label: 'Ráfaga (km/h)',
+              data: sRafaga,
+              borderColor: '#ef4444',
+              tension: 0.3,
+              pointRadius: 2
+            }
+          ]
+        },
+        options: commonOptions
+      });
+
+      // Chart 4: Lluvia
+      if (chartLluvia) chartLluvia.destroy();
+      chartLluvia = new Chart(document.getElementById('chart-lluvia'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Lluvia Acumulada (mm)',
+              data: sLluvia,
+              backgroundColor: '#3b82f6',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: commonOptions
+      });
+    }
+
+    function renderTabla(obsList) {
+      const tbody = document.getElementById('tabla-ultimas-lecturas');
+      const ultimos = [...obsList].reverse().slice(0, 15);
+      
+      tbody.innerHTML = ultimos.map(item => {
+        const hora = item.obsTimeLocal ? item.obsTimeLocal.split(' ')[1] : '--';
+        const m = item.metric || {};
+        const t = m.tempAvg !== null ? m.tempAvg.toFixed(1) : (m.tempHigh !== null ? m.tempHigh.toFixed(1) : '--');
+        const h = item.humidityAvg !== null ? Math.round(item.humidityAvg) : '--';
+        const d = m.dewptAvg !== null ? m.dewptAvg.toFixed(1) : '--';
+        const w = m.windspeedAvg !== null ? m.windspeedAvg.toFixed(1) : '0.0';
+        const g = m.windgustHigh !== null ? m.windgustHigh.toFixed(1) : '0.0';
+        const p = m.pressureMin !== null ? m.pressureMin.toFixed(1) : '--';
+        const ll = m.precipTotal !== null ? m.precipTotal.toFixed(2) : '0.00';
+
+        return `
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+            <td class="p-2.5 font-semibold text-sky-600 dark:text-sky-400">${hora}</td>
+            <td class="p-2.5 font-bold">${t} °C</td>
+            <td class="p-2.5">${h}%</td>
+            <td class="p-2.5 text-slate-500 dark:text-slate-400">${d} °C</td>
+            <td class="p-2.5 text-emerald-600 dark:text-emerald-400 font-semibold">${w}</td>
+            <td class="p-2.5 text-red-500 font-semibold">${g}</td>
+            <td class="p-2.5">${p}</td>
+            <td class="p-2.5 text-blue-600 dark:text-blue-400 font-bold">${ll}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function actualizarGraficosEstilo() {
+      if (chartTemp) recargarDatos();
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+      feather.replace();
+      recargarDatos();
+      setInterval(recargarDatos, 60000); // Refresco automático cada 60 seg en el navegador
+    });
+  </script>
+</body>
+</html>
