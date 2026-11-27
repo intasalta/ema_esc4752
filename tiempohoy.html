@@ -188,7 +188,7 @@
       <!-- Presión Barométrica -->
       <div class="glass-card rounded-2xl p-3 flex flex-col justify-between">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase">Presión Absoluta</span>
+          <span class="text-[11px] font-semibold text-slate-400 uppercase">Presión Atmosf.</span>
           <i data-lucide="gauge" class="w-4 h-4 text-purple-400"></i>
         </div>
         <div class="my-2">
@@ -196,24 +196,11 @@
           <span class="text-[10px] font-semibold text-slate-400">hPa</span>
         </div>
         <div class="flex justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
-          <span>Relativa:</span>
-          <span id="presion-rel-val" class="font-bold text-slate-200">-- hPa</span>
+          <span>Absoluta:</span>
+          <span id="presion-abs-val" class="font-bold text-slate-200">-- hPa</span>
         </div>
       </div>
 
-    </div>
-
-    <!-- BOTONES DE NAVEGACIÓN -->
-    <div class="grid grid-cols-2 gap-2 pt-2">
-      <a href="index.html" class="glass-card hover:bg-slate-800/80 active:scale-95 transition-all p-3 rounded-2xl flex items-center justify-center gap-2 text-xs font-semibold text-sky-400 border-sky-500/20">
-        <i data-lucide="layout" class="w-4 h-4"></i>
-        <span>Dashboard Completo</span>
-      </a>
-
-      <a href="resumen.html" class="glass-card hover:bg-slate-800/80 active:scale-95 transition-all p-3 rounded-2xl flex items-center justify-center gap-2 text-xs font-semibold text-amber-400 border-amber-500/20">
-        <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
-        <span>Resumen Climático</span>
-      </a>
     </div>
 
   </main>
@@ -275,11 +262,15 @@
         // Lluvia y Presión
         document.getElementById('lluvia-val').innerText = ext.lluvia_total !== null ? ext.lluvia_total.toFixed(2) : '0.00';
         document.getElementById('lluvia-tasa').innerText = (act.lluvia_tasa ? act.lluvia_tasa.toFixed(1) : '0.0') + ' mm/h';
-        const pAbs = act.presion_absoluta !== undefined ? act.presion_absoluta : act.presion;
-        const pRel = act.presion_relativa !== undefined ? act.presion_relativa : null;
-        document.getElementById('presion-val').innerText = pAbs !== null ? pAbs.toFixed(1) : '--';
-        if (document.getElementById('presion-rel-val')) {
-          document.getElementById('presion-rel-val').innerText = pRel !== null ? pRel.toFixed(1) + ' hPa' : '--';
+        const pRel = act.presion_relativa !== undefined && act.presion_relativa !== null ? act.presion_relativa : (act.presion && act.presion > 900 ? act.presion : null);
+        const pAbs = act.presion_absoluta !== undefined && act.presion_absoluta !== null ? act.presion_absoluta : (act.presion && act.presion < 900 ? act.presion : null);
+        
+        // Número principal: Presión Relativa convencional (~1010 hPa)
+        document.getElementById('presion-val').innerText = pRel !== null ? pRel.toFixed(1) : '--';
+        // Subtexto: Presión Absoluta real en la estación (~847 hPa a 1520 msnm)
+        const elPresAbs = document.getElementById('presion-abs-val');
+        if (elPresAbs) {
+          elPresAbs.innerText = pAbs !== null ? pAbs.toFixed(1) + ' hPa' : '--';
         }
 
       } catch (e) {
