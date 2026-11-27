@@ -188,7 +188,7 @@
       <!-- Presión Barométrica -->
       <div class="glass-card rounded-2xl p-3 flex flex-col justify-between">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase">Presión</span>
+          <span class="text-[11px] font-semibold text-slate-400 uppercase">Presión Absoluta</span>
           <i data-lucide="gauge" class="w-4 h-4 text-purple-400"></i>
         </div>
         <div class="my-2">
@@ -196,8 +196,8 @@
           <span class="text-[10px] font-semibold text-slate-400">hPa</span>
         </div>
         <div class="flex justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
-          <span>Altitud:</span>
-          <span class="font-bold text-slate-200">1520 msnm</span>
+          <span>Relativa:</span>
+          <span id="presion-rel-val" class="font-bold text-slate-200">-- hPa</span>
         </div>
       </div>
 
@@ -275,7 +275,12 @@
         // Lluvia y Presión
         document.getElementById('lluvia-val').innerText = ext.lluvia_total !== null ? ext.lluvia_total.toFixed(2) : '0.00';
         document.getElementById('lluvia-tasa').innerText = (act.lluvia_tasa ? act.lluvia_tasa.toFixed(1) : '0.0') + ' mm/h';
-        document.getElementById('presion-val').innerText = act.presion !== null ? act.presion.toFixed(1) : '--';
+        const pAbs = act.presion_absoluta !== undefined ? act.presion_absoluta : act.presion;
+        const pRel = act.presion_relativa !== undefined ? act.presion_relativa : null;
+        document.getElementById('presion-val').innerText = pAbs !== null ? pAbs.toFixed(1) : '--';
+        if (document.getElementById('presion-rel-val')) {
+          document.getElementById('presion-rel-val').innerText = pRel !== null ? pRel.toFixed(1) + ' hPa' : '--';
+        }
 
       } catch (e) {
         console.warn("Aviso:", e);

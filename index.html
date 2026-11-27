@@ -61,7 +61,7 @@
           <p class="font-semibold text-blue-100 flex items-center justify-end gap-1">
             <i data-feather="map-pin" class="h-3.5 w-3.5 text-sky-300"></i> Lat -24.91155 | Long -65.63219
           </p>
-          <p class="text-blue-200 text-[11px] mt-0.5" id="station-elev-header">Altitud: 1520 msnm | Wunderground PWS</p>
+          <p class="text-blue-200 text-[11px] mt-0.5" id="station-elev-header">Altitud: 1520 msnm | DAZA Wireless Weather Station</p>
         </div>
 
         <!-- Botón Modo Oscuro / Claro -->
@@ -129,201 +129,305 @@
       </div>
     </div>
 
-    <!-- TARJETAS PRINCIPALES DE MONITOREO (GRID 4 COLUMNAS) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- FILA 1: TEMPERATURA Y HUMEDAD (2 COLUMNAS) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <!-- TARJETA 1: TEMPERATURA -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between">
+      <!-- TARJETA: TEMPERATURA & SENSACIÓN TÉRMICA -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between transition-colors">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Temperatura</span>
-          <div class="p-2 bg-amber-500/10 text-amber-500 rounded-xl">
-            <i data-feather="thermometer" class="h-5 w-5"></i>
-          </div>
+          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-feather="thermometer" class="h-4 w-4 text-amber-500"></i> Temperatura y Sensación Térmica
+          </span>
+          <span class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold font-mono">Aire</span>
         </div>
 
-        <div class="my-2">
-          <div class="flex items-baseline gap-1">
-            <span id="val-temp" class="text-4xl font-extrabold text-slate-900 dark:text-white">--</span>
-            <span class="text-xl font-bold text-slate-500 dark:text-slate-400">°C</span>
-          </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Sensación: <span id="val-sensacion" class="font-semibold text-slate-700 dark:text-slate-300">-- °C</span>
-          </p>
-        </div>
-
-        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-2 text-xs">
-          <div>
-            <span class="text-[10px] text-blue-500 dark:text-blue-400 font-semibold uppercase">Mínima Hoy</span>
-            <p id="val-temp-min" class="font-bold text-slate-800 dark:text-slate-200">-- °C</p>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-red-500 dark:text-red-400 font-semibold uppercase">Máxima Hoy</span>
-            <p id="val-temp-max" class="font-bold text-slate-800 dark:text-slate-200">-- °C</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- TARJETA 2: HUMEDAD Y PUNTO DE ROCÍO -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Humedad</span>
-          <div class="p-2 bg-sky-500/10 text-sky-500 rounded-xl">
-            <i data-feather="droplet" class="h-5 w-5"></i>
-          </div>
-        </div>
-
-        <div class="my-2">
-          <div class="flex items-baseline gap-1">
-            <span id="val-humedad" class="text-4xl font-extrabold text-slate-900 dark:text-white">--</span>
-            <span class="text-xl font-bold text-slate-500 dark:text-slate-400">%</span>
-          </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Pto. Rocío: <span id="val-dewpt" class="font-semibold text-slate-700 dark:text-slate-300">-- °C</span>
-          </p>
-        </div>
-
-        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-2 text-xs">
-          <div>
-            <span class="text-[10px] text-slate-400 font-semibold uppercase">Mínima Hoy</span>
-            <p id="val-hum-min" class="font-bold text-slate-800 dark:text-slate-200">-- %</p>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-slate-400 font-semibold uppercase">Máxima Hoy</span>
-            <p id="val-hum-max" class="font-bold text-slate-800 dark:text-slate-200">-- %</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- TARJETA 3: VIENTO Y RÁFAGAS -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Viento</span>
-          <div class="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl">
-            <i data-feather="wind" class="h-5 w-5"></i>
-          </div>
-        </div>
-
-        <div class="my-2 flex items-center justify-between">
+        <div class="my-3 flex items-baseline justify-between">
           <div>
             <div class="flex items-baseline gap-1">
-              <span id="val-viento" class="text-4xl font-extrabold text-slate-900 dark:text-white">--</span>
-              <span class="text-sm font-bold text-slate-500 dark:text-slate-400">km/h</span>
+              <span id="val-temp" class="text-5xl font-extrabold text-slate-900 dark:text-white">--</span>
+              <span class="text-2xl font-bold text-slate-500 dark:text-slate-400">°C</span>
             </div>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Dirección: <span id="val-viento-dir" class="font-bold text-sky-600 dark:text-sky-400">--</span> (<span id="val-viento-deg">0</span>°)
+              Sensación: <span id="val-sensacion" class="font-semibold text-slate-700 dark:text-slate-200">-- °C</span> &bull;
+              Índice Calor: <span id="val-heat-index" class="font-semibold text-slate-700 dark:text-slate-200">-- °C</span>
             </p>
           </div>
-
-          <!-- Brújula / Dial de orientación -->
-          <div class="relative w-12 h-12 rounded-full border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center bg-slate-50 dark:bg-slate-900/50">
-            <span class="absolute top-0.5 text-[8px] font-bold text-slate-400">N</span>
-            <div id="compass-arrow" class="compass-dial w-full h-full flex items-center justify-center">
-              <i data-feather="navigation" class="w-5 h-5 text-emerald-500 fill-emerald-500"></i>
-            </div>
+          <div class="p-3 bg-amber-500/10 text-amber-500 rounded-2xl">
+            <i data-feather="sun" class="h-8 w-8"></i>
           </div>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-2 text-xs">
-          <div>
-            <span class="text-[10px] text-slate-400 font-semibold uppercase">Ráfaga Actual</span>
-            <p id="val-rafaga-act" class="font-bold text-slate-800 dark:text-slate-200">-- km/h</p>
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-3 text-xs">
+          <div class="bg-blue-50/70 dark:bg-blue-950/30 p-2.5 rounded-xl border border-blue-100 dark:border-blue-900/40">
+            <span class="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase">Mínima Hoy</span>
+            <p id="val-temp-min" class="text-base font-bold text-blue-950 dark:text-blue-200 mt-0.5">-- °C</p>
           </div>
-          <div class="text-right">
-            <span class="text-[10px] text-slate-400 font-semibold uppercase">Ráfaga Máx Hoy</span>
-            <p id="val-rafaga-max" class="font-bold text-slate-800 dark:text-slate-200">-- km/h</p>
+          <div class="bg-red-50/70 dark:bg-red-950/30 p-2.5 rounded-xl border border-red-100 dark:border-red-900/40 text-right">
+            <span class="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase">Máxima Hoy</span>
+            <p id="val-temp-max" class="text-base font-bold text-red-950 dark:text-red-200 mt-0.5">-- °C</p>
           </div>
         </div>
       </div>
 
-      <!-- TARJETA 4: PRECIPITACIONES Y PRESIÓN -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between">
+      <!-- TARJETA: HUMEDAD RELATIVA Y PUNTO DE ROCÍO -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between transition-colors">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Precipitación Hoy</span>
-          <div class="p-2 bg-blue-500/10 text-blue-500 rounded-xl">
-            <i data-feather="cloud-rain" class="h-5 w-5"></i>
-          </div>
+          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-feather="droplet" class="h-4 w-4 text-sky-500"></i> Humedad Relativa & Rocío
+          </span>
+          <span class="text-[11px] px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-semibold font-mono">Higrometría</span>
         </div>
 
-        <div class="my-2">
-          <div class="flex items-baseline gap-1">
-            <span id="val-lluvia" class="text-4xl font-extrabold text-blue-600 dark:text-blue-400">--</span>
-            <span class="text-xl font-bold text-slate-500 dark:text-slate-400">mm</span>
-          </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Presión: <span id="val-presion" class="font-semibold text-slate-700 dark:text-slate-300">-- hPa</span>
-          </p>
-        </div>
-
-        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-2 text-xs">
+        <div class="my-3 flex items-baseline justify-between">
           <div>
-            <span class="text-[10px] text-slate-400 font-semibold uppercase">Presión Mín</span>
-            <p id="val-pres-min" class="font-bold text-slate-800 dark:text-slate-200">-- hPa</p>
+            <div class="flex items-baseline gap-1">
+              <span id="val-humedad" class="text-5xl font-extrabold text-slate-900 dark:text-white">--</span>
+              <span class="text-2xl font-bold text-slate-500 dark:text-slate-400">%</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Punto de Rocío: <span id="val-dewpt" class="font-semibold text-slate-700 dark:text-slate-200">-- °C</span>
+            </p>
           </div>
-          <div class="text-right">
-            <span class="text-[10px] text-slate-400 font-semibold uppercase">Presión Máx</span>
-            <p id="val-pres-max" class="font-bold text-slate-800 dark:text-slate-200">-- hPa</p>
+          <div class="p-3 bg-sky-500/10 text-sky-500 rounded-2xl">
+            <i data-feather="cloud" class="h-8 w-8"></i>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50 grid grid-cols-2 gap-3 text-xs">
+          <div class="bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+            <span class="text-[10px] text-slate-400 font-bold uppercase">Mínima Hoy</span>
+            <p id="val-hum-min" class="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">-- %</p>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-right">
+            <span class="text-[10px] text-slate-400 font-bold uppercase">Máxima Hoy</span>
+            <p id="val-hum-max" class="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">-- %</p>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- SECCIÓN DE GRÁFICOS DINÁMICOS DEL DÍA -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- FILA 2: PRECIPITACIÓN & LLUVIA (ESTILO CERRILLOS) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <!-- GRÁFICO 1: TEMPERATURA Y SENSACIÓN TÉRMICA -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <i data-feather="activity" class="text-amber-500 h-5 w-5"></i>
-            <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Evolución Térmica Hoy</h3>
+      <!-- TARJETA DE DATOS: PRECIPITACIONES -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-5 flex flex-col justify-between transition-colors">
+        <div>
+          <h3 class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
+            <i data-feather="cloud-rain" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i> Precipitación & Lluvia
+          </h3>
+
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 p-3 rounded-xl">
+              <p class="text-xs text-blue-600 dark:text-blue-400 font-medium">Lluvia del Día</p>
+              <p id="val-lluvia-dia" class="text-2xl font-bold text-blue-950 dark:text-blue-200">0.0 mm</p>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+              <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Intensidad Actual</p>
+              <p id="val-lluvia-tasa" class="text-2xl font-bold text-slate-800 dark:text-white">0.0 mm/hr</p>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+              <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Lluvia Mensual</p>
+              <p id="val-lluvia-mes" class="text-xl font-bold text-slate-800 dark:text-white">0.0 mm</p>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+              <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Acumulado Anual</p>
+              <p id="val-lluvia-anual" class="text-xl font-bold text-slate-900 dark:text-white">0.0 mm</p>
+            </div>
           </div>
-          <span class="text-[11px] text-slate-400 font-medium">Intervalos 5 min</span>
         </div>
-        <div class="relative h-64 w-full">
-          <canvas id="chart-temperatura"></canvas>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
+          <span>Sensor Pluviométrico Digital DAZA</span>
+          <span class="font-mono text-sky-600 dark:text-sky-400 font-semibold">Resolución: 0.25 mm</span>
         </div>
       </div>
 
-      <!-- GRÁFICO 2: PRESIÓN Y HUMEDAD -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <i data-feather="bar-chart" class="text-sky-500 h-5 w-5"></i>
-            <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Humedad y Presión</h3>
-          </div>
-          <span class="text-[11px] text-slate-400 font-medium">Registros del día</span>
+      <!-- TARJETA DEL GRÁFICO: PRECIPITACIÓN HISTÓRICA Y TASA -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-5 flex flex-col justify-between transition-colors">
+        <div>
+          <h3 class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-2">
+            <i data-feather="bar-chart-2" class="h-5 w-5 text-sky-500"></i> Gráfico de Precipitación
+          </h3>
         </div>
-        <div class="relative h-64 w-full">
-          <canvas id="chart-humedad-presion"></canvas>
+
+        <div class="pt-2">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <i data-feather="cloud-drizzle" class="h-3.5 w-3.5 text-sky-500"></i> Lluvia y Tasa de Precipitación (mm)
+            </span>
+            <span id="badge-rain-val" class="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-semibold font-mono">0.0 mm</span>
+          </div>
+          <div class="h-44 w-full relative">
+            <canvas id="chartLluvia"></canvas>
+          </div>
         </div>
       </div>
 
-      <!-- GRÁFICO 3: VIENTO Y RÁFAGAS -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <i data-feather="wind" class="text-emerald-500 h-5 w-5"></i>
-            <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Velocidad del Viento y Ráfagas (km/h)</h3>
+    </div>
+
+    <!-- FILA 3: VIENTO Y PRESIÓN BAROMÉTRICA (ESTILO CERRILLOS) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- COLUMNA 1: VIENTO -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-5 flex flex-col justify-between transition-colors">
+        <div>
+          <h3 class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
+            <i data-feather="wind" class="h-5 w-5 text-sky-500"></i> Viento
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center mb-4">
+            <!-- Velocidad y Dirección -->
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Velocidad Actual</p>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="val-viento" class="text-4xl font-extrabold text-slate-900 dark:text-white">0.0</span>
+                <span class="text-sm font-semibold text-slate-400">km/h</span>
+              </div>
+              <p id="val-viento-estado" class="text-xs text-sky-600 dark:text-sky-400 font-semibold mt-0.5">Calma</p>
+
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-3">Dirección</p>
+              <div class="flex items-center gap-2 mt-1">
+                <span id="val-viento-badge" class="px-2.5 py-1 rounded-lg bg-sky-950/80 text-sky-300 border border-sky-600/40 font-bold text-xs font-mono">-- 0°</span>
+                <span id="val-viento-cardinal-desc" class="text-xs text-slate-600 dark:text-slate-300 font-medium">Viento del Norte</span>
+              </div>
+            </div>
+
+            <!-- Brújula Náutica Estilizada -->
+            <div class="flex flex-col items-center justify-center">
+              <div class="relative w-28 h-28 rounded-full bg-[#0a101d] border-2 border-slate-700/80 flex items-center justify-center shadow-inner">
+                <!-- Puntos cardinales grabados -->
+                <span class="absolute top-1 text-[10px] font-extrabold text-red-500">N</span>
+                <span class="absolute right-1.5 text-[9px] font-bold text-slate-400">E</span>
+                <span class="absolute bottom-1 text-[9px] font-bold text-slate-400">S</span>
+                <span class="absolute left-1.5 text-[9px] font-bold text-slate-400">W</span>
+                
+                <span class="absolute top-3 right-3 text-[7px] font-medium text-slate-500">NE</span>
+                <span class="absolute bottom-3 right-3 text-[7px] font-medium text-slate-500">SE</span>
+                <span class="absolute bottom-3 left-3 text-[7px] font-medium text-slate-500">SW</span>
+                <span class="absolute top-3 left-3 text-[7px] font-medium text-slate-500">NW</span>
+
+                <!-- Aguja de viento giratoria -->
+                <div id="compass-arrow" class="compass-dial w-full h-full flex items-center justify-center">
+                  <div class="relative w-full h-full flex items-center justify-center">
+                    <div class="w-1 h-10 bg-gradient-to-t from-transparent via-sky-400 to-sky-300 rounded-full shadow-[0_0_8px_rgba(56,189,248,0.8)]"></div>
+                    <div class="absolute -top-0.5 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[8px] border-b-sky-300"></div>
+                  </div>
+                </div>
+
+                <!-- Punto central -->
+                <div class="absolute w-3 h-3 rounded-full bg-slate-900 border-2 border-sky-400 shadow"></div>
+              </div>
+
+              <div class="mt-1 px-2 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-[10px] font-mono text-slate-300">
+                <span id="compass-badge">-- 0°</span>
+              </div>
+            </div>
           </div>
-          <span class="text-[11px] text-slate-400 font-medium">km/h</span>
+
+          <!-- Máximas Registradas -->
+          <div class="border-t border-slate-100 dark:border-slate-700/50 pt-3">
+            <p class="text-[10px] font-semibold text-slate-400 uppercase mb-2">Máximas Registradas</p>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+              <div class="bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                <span class="block text-slate-400 text-[10px]">Diaria</span>
+                <span id="val-viento-max-dia" class="font-bold text-slate-700 dark:text-slate-200">-- km/h</span>
+              </div>
+              <div class="bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                <span class="block text-slate-400 text-[10px]">Ráfaga Máx</span>
+                <span id="val-rafaga-max-dia" class="font-bold text-red-500">-- km/h</span>
+              </div>
+              <div class="bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                <span class="block text-slate-400 text-[10px]">Anual</span>
+                <span id="val-viento-max-anual" class="font-bold text-slate-700 dark:text-slate-200">-- km/h</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="relative h-64 w-full">
-          <canvas id="chart-viento"></canvas>
+
+        <!-- Gráfico Viento y Ráfagas -->
+        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <i data-feather="wind" class="h-3.5 w-3.5 text-sky-500"></i> Velocidad y Ráfagas (km/h)
+            </span>
+            <span id="badge-wind-val" class="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-semibold font-mono">--</span>
+          </div>
+          <div class="h-44 w-full relative">
+            <canvas id="chartViento"></canvas>
+          </div>
         </div>
       </div>
 
-      <!-- GRÁFICO 4: LLUVIA ACUMULADA -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700/60">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <i data-feather="cloud-drizzle" class="text-blue-500 h-5 w-5"></i>
-            <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Precipitación Acumulada (mm)</h3>
+      <!-- COLUMNA 2: PRESIÓN BAROMÉTRICA (ABSOLUTA Y RELATIVA) -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-5 flex flex-col justify-between transition-colors">
+        <div>
+          <h3 class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
+            <i data-feather="compass" class="h-5 w-5 text-indigo-500"></i> Presión Barométrica (Absoluta & Relativa)
+          </h3>
+
+          <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+            <div class="bg-indigo-50/60 dark:bg-indigo-950/30 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/40">
+              <p class="text-xs text-indigo-600 dark:text-indigo-400 font-medium">Presión Absoluta (1520 msnm)</p>
+              <p class="text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
+                <span id="val-pres-abs">--</span> <span class="text-xs font-normal text-slate-400">hPa</span>
+              </p>
+              <p class="text-[11px] text-slate-400 mt-1">Presión Relativa: <strong id="val-pres-rel" class="text-slate-700 dark:text-slate-300">--</strong> hPa</p>
+            </div>
+            
+            <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+              <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Tendencia Barométrica</p>
+              <p id="val-pres-trend" class="text-base font-semibold text-indigo-600 dark:text-indigo-400 mt-1">Estable</p>
+              <p class="text-[11px] text-slate-400 mt-1">Variación: <span id="val-pres-trend-val">0.0 hPa/3h</span></p>
+            </div>
           </div>
-          <span class="text-[11px] text-slate-400 font-medium">Milímetros</span>
+
+          <!-- Tabla de Extremos Diarios y Mensuales -->
+          <table class="w-full text-xs text-left text-slate-600 dark:text-slate-300 mb-2">
+            <thead class="bg-slate-50 dark:bg-slate-900/50 text-slate-400 font-semibold uppercase">
+              <tr>
+                <th class="py-2 px-2">Período</th>
+                <th class="py-2 px-2 text-center">Mínima (Abs / Rel)</th>
+                <th class="py-2 px-2 text-center">Máxima (Abs / Rel)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+              <tr>
+                <td class="py-2 px-2 font-medium">Diaria</td>
+                <td class="py-2 px-2 text-center font-semibold text-blue-600 dark:text-blue-400">
+                  <span id="val-pres-min-abs">--</span> / <span id="val-pres-min-rel">--</span> hPa
+                </td>
+                <td class="py-2 px-2 text-center font-semibold text-red-500">
+                  <span id="val-pres-max-abs">--</span> / <span id="val-pres-max-rel">--</span> hPa
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2 px-2 font-medium">Mensual</td>
+                <td class="py-2 px-2 text-center font-semibold text-blue-600 dark:text-blue-400">
+                  <span id="val-pres-mes-min">--</span> hPa
+                </td>
+                <td class="py-2 px-2 text-center font-semibold text-red-500">
+                  <span id="val-pres-mes-max">--</span> hPa
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="relative h-64 w-full">
-          <canvas id="chart-lluvia"></canvas>
+
+        <!-- Gráfico Evolución Barométrica -->
+        <div class="mt-2 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <i data-feather="compass" class="h-3.5 w-3.5 text-indigo-500"></i> Evolución Barométrica Absoluta (hPa)
+            </span>
+            <span id="badge-bar-val" class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold font-mono">-- hPa</span>
+          </div>
+          <div class="h-44 w-full relative">
+            <canvas id="chartBarometro"></canvas>
+          </div>
         </div>
       </div>
 
@@ -336,7 +440,7 @@
           <i data-feather="list" class="text-sky-500 h-5 w-5"></i>
           <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Últimas Lecturas Registradas Hoy</h3>
         </div>
-        <span class="text-[11px] text-slate-400">Orden cronológico descendente</span>
+        <span class="text-[11px] text-slate-400">Registros cada 5-10 minutos</span>
       </div>
 
       <div class="overflow-x-auto no-scrollbar">
@@ -347,15 +451,17 @@
               <th class="p-2.5">Temp (°C)</th>
               <th class="p-2.5">Humedad (%)</th>
               <th class="p-2.5">Pto Rocío (°C)</th>
+              <th class="p-2.5">Dir Viento</th>
               <th class="p-2.5">Viento (km/h)</th>
               <th class="p-2.5">Ráfaga (km/h)</th>
-              <th class="p-2.5">Presión (hPa)</th>
-              <th class="p-2.5">Lluvia Hoy (mm)</th>
+              <th class="p-2.5 font-bold text-indigo-600 dark:text-indigo-400">Presión Abs (hPa)</th>
+              <th class="p-2.5 text-slate-400">Presión Rel (hPa)</th>
+              <th class="p-2.5 text-blue-600 dark:text-blue-400 font-bold">Lluvia Hoy (mm)</th>
             </tr>
           </thead>
           <tbody id="tabla-ultimas-lecturas" class="divide-y divide-slate-100 dark:divide-slate-700/40 text-slate-700 dark:text-slate-200 font-medium">
             <tr>
-              <td colspan="8" class="p-4 text-center text-slate-400">Cargando registros...</td>
+              <td colspan="10" class="p-4 text-center text-slate-400">Cargando registros...</td>
             </tr>
           </tbody>
         </table>
@@ -453,18 +559,60 @@
     function cerrarInfoModal() { infoModal.classList.add('hidden'); }
 
     // Instancias de Gráficos
-    let chartTemp, chartHumPres, chartViento, chartLluvia;
+    let chartLluvia, chartViento, chartBarometro;
+
+    function degToCompass(d) {
+      if (d === null || d === undefined) return "---";
+      const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+      const idx = Math.round(d / 22.5) % 16;
+      return dirs[idx];
+    }
+
+    function degToFullName(d) {
+      if (d === null || d === undefined) return "Dirección variable";
+      const nombres = [
+        "Viento del Norte", "Viento del Nor-Noreste", "Viento del Noreste", "Viento del Este-Noreste",
+        "Viento del Este", "Viento del Este-Sureste", "Viento del Sureste", "Viento del Sur-Sureste",
+        "Viento del Sur", "Viento del Sur-Suroeste", "Viento del Suroeste", "Viento del Oeste-Suroeste",
+        "Viento del Oeste", "Viento del Oeste-Noroeste", "Viento del Noroeste", "Viento del Nor-Noroeste"
+      ];
+      const idx = Math.round(d / 22.5) % 16;
+      return nombres[idx];
+    }
+
+    function vientoEstado(speed) {
+      const v = parseFloat(speed) || 0;
+      if (v < 1.0) return "Calma";
+      if (v < 5.0) return "Ventolina";
+      if (v < 12.0) return "Brisa muy débil";
+      if (v < 20.0) return "Brisa suave";
+      if (v < 29.0) return "Brisa moderada";
+      if (v < 39.0) return "Brisa fresca";
+      return "Viento fuerte";
+    }
+
+    // Fórmula barométrica oficial: Pabs = Prel * (1 - (0.0065 * 1520) / (T + 0.0065 * 1520 + 273.15)) ^ 5.257
+    function calcularPresionAbsoluta(pRel, tempC, h = 1520) {
+      if (pRel === null || pRel === undefined) return null;
+      const t = tempC !== null && tempC !== undefined ? parseFloat(tempC) : 15.0;
+      const factor = 1.0 - (0.0065 * h) / (t + 0.0065 * h + 273.15);
+      return parseFloat((pRel * Math.pow(factor, 5.257)).toFixed(1));
+    }
 
     async function recargarDatos() {
       const btnIcon = document.getElementById('btn-refresh-icon');
-      btnIcon.classList.add('animate-spin');
+      if (btnIcon) btnIcon.classList.add('animate-spin');
       try {
         await cargarDatosActuales();
         await cargarSerieHoy();
+        await cargarHistoricoTotales();
       } catch (err) {
         console.error("Error al recargar datos:", err);
       } finally {
-        setTimeout(() => btnIcon.classList.remove('animate-spin'), 600);
+        setTimeout(() => {
+          if (btnIcon) btnIcon.classList.remove('animate-spin');
+          feather.replace();
+        }, 600);
       }
     }
 
@@ -501,44 +649,110 @@
         document.getElementById('label-hora-actualizado').innerText = 
           formatearDiaMesHora(est.actualizado_local);
         
-        if (est.elevacion_m) {
-          document.getElementById('station-elev-header').innerText = 
-            `Altitud: ${est.elevacion_m} msnm | ${est.software || 'Wunderground PWS'}`;
-        }
+        document.getElementById('station-elev-header').innerText = 
+          `Altitud: 1520 msnm | DAZA Wireless Weather Station`;
 
-        // Temperatura
+        // 1. Temperatura
         document.getElementById('val-temp').innerText = act.temperatura !== null ? act.temperatura.toFixed(1) : '--';
         document.getElementById('val-sensacion').innerText = (act.sensacion_termica !== null ? act.sensacion_termica.toFixed(1) : '--') + ' °C';
+        document.getElementById('val-heat-index').innerText = (act.indice_calor !== null ? act.indice_calor.toFixed(1) : '--') + ' °C';
         document.getElementById('val-temp-min').innerText = (ext.temperatura_min !== null ? ext.temperatura_min.toFixed(1) : '--') + ' °C';
         document.getElementById('val-temp-max').innerText = (ext.temperatura_max !== null ? ext.temperatura_max.toFixed(1) : '--') + ' °C';
 
-        // Humedad
+        // 2. Humedad
         document.getElementById('val-humedad').innerText = act.humedad !== null ? Math.round(act.humedad) : '--';
         document.getElementById('val-dewpt').innerText = (act.punto_rocio !== null ? act.punto_rocio.toFixed(1) : '--') + ' °C';
         document.getElementById('val-hum-min').innerText = (ext.humedad_min !== null ? Math.round(ext.humedad_min) : '--') + ' %';
         document.getElementById('val-hum-max').innerText = (ext.humedad_max !== null ? Math.round(ext.humedad_max) : '--') + ' %';
 
-        // Viento
-        document.getElementById('val-viento').innerText = act.viento_velocidad !== null ? act.viento_velocidad.toFixed(1) : '0.0';
-        document.getElementById('val-viento-dir').innerText = act.viento_direccion_cardinal || '---';
-        document.getElementById('val-viento-deg').innerText = act.viento_direccion_grados !== null ? act.viento_direccion_grados : '0';
-        document.getElementById('val-rafaga-act').innerText = (act.viento_rafaga !== null ? act.viento_rafaga.toFixed(1) : '0.0') + ' km/h';
-        document.getElementById('val-rafaga-max').innerText = (ext.rafaga_maxima !== null ? ext.rafaga_maxima.toFixed(1) : '0.0') + ' km/h';
+        // 3. Precipitación & Lluvia
+        const lluviaHoy = ext.lluvia_total !== null ? ext.lluvia_total : (act.lluvia_hoy || 0.0);
+        document.getElementById('val-lluvia-dia').innerText = lluviaHoy.toFixed(1) + ' mm';
+        document.getElementById('val-lluvia-tasa').innerText = (act.lluvia_tasa !== null && act.lluvia_tasa !== undefined ? act.lluvia_tasa.toFixed(1) : '0.0') + ' mm/hr';
+        document.getElementById('badge-rain-val').innerText = lluviaHoy.toFixed(1) + ' mm';
+
+        // 4. Viento (Estilo Cerrillos)
+        const vSpeed = act.viento_velocidad !== null ? act.viento_velocidad : 0.0;
+        const vDeg = act.viento_direccion_grados !== null ? act.viento_direccion_grados : 0;
+        const vCard = act.viento_direccion_cardinal || degToCompass(vDeg);
+
+        document.getElementById('val-viento').innerText = vSpeed.toFixed(1);
+        document.getElementById('val-viento-estado').innerText = vientoEstado(vSpeed);
+        document.getElementById('val-viento-badge').innerText = `${vCard} ${vDeg}°`;
+        document.getElementById('val-viento-cardinal-desc').innerText = degToFullName(vDeg);
+        document.getElementById('compass-badge').innerText = `${vCard} ${vDeg}°`;
 
         // Rotar aguja brújula
         const compass = document.getElementById('compass-arrow');
-        if (compass && act.viento_direccion_grados !== null) {
-          compass.style.transform = `rotate(${act.viento_direccion_grados}deg)`;
+        if (compass) {
+          compass.style.transform = `rotate(${vDeg}deg)`;
         }
 
-        // Lluvia y Presión
-        document.getElementById('val-lluvia').innerText = ext.lluvia_total !== null ? ext.lluvia_total.toFixed(2) : '0.00';
-        document.getElementById('val-presion').innerText = (act.presion !== null ? act.presion.toFixed(1) : '--') + ' hPa';
-        document.getElementById('val-pres-min').innerText = (ext.presion_min !== null ? ext.presion_min.toFixed(1) : '--') + ' hPa';
-        document.getElementById('val-pres-max').innerText = (ext.presion_max !== null ? ext.presion_max.toFixed(1) : '--') + ' hPa';
+        document.getElementById('val-viento-max-dia').innerText = (ext.viento_maximo !== null ? ext.viento_maximo.toFixed(1) : '0.0') + ' km/h';
+        document.getElementById('val-rafaga-max-dia').innerText = (ext.rafaga_maxima !== null ? ext.rafaga_maxima.toFixed(1) : '0.0') + ' km/h';
+
+        // 5. Presión Barométrica (Absoluta & Relativa)
+        const pRel = act.presion_relativa !== null && act.presion_relativa !== undefined ? act.presion_relativa : act.presion;
+        const pAbs = act.presion_absoluta !== null && act.presion_absoluta !== undefined ? act.presion_absoluta : calcularPresionAbsoluta(pRel, act.temperatura);
+
+        document.getElementById('val-pres-abs').innerText = pAbs !== null ? pAbs.toFixed(1) : '--';
+        document.getElementById('val-pres-rel').innerText = pRel !== null ? pRel.toFixed(1) : '--';
+        document.getElementById('badge-bar-val').innerText = (pAbs !== null ? pAbs.toFixed(1) : '--') + ' hPa';
+
+        const pAbsMin = ext.presion_abs_min !== null && ext.presion_abs_min !== undefined ? ext.presion_abs_min : calcularPresionAbsoluta(ext.presion_min, ext.temperatura_min);
+        const pAbsMax = ext.presion_abs_max !== null && ext.presion_abs_max !== undefined ? ext.presion_abs_max : calcularPresionAbsoluta(ext.presion_max, ext.temperatura_max);
+        const pRelMin = ext.presion_rel_min !== null && ext.presion_rel_min !== undefined ? ext.presion_rel_min : ext.presion_min;
+        const pRelMax = ext.presion_rel_max !== null && ext.presion_rel_max !== undefined ? ext.presion_rel_max : ext.presion_max;
+
+        document.getElementById('val-pres-min-abs').innerText = pAbsMin !== null ? pAbsMin.toFixed(1) : '--';
+        document.getElementById('val-pres-min-rel').innerText = pRelMin !== null ? pRelMin.toFixed(1) : '--';
+        document.getElementById('val-pres-max-abs').innerText = pAbsMax !== null ? pAbsMax.toFixed(1) : '--';
+        document.getElementById('val-pres-max-rel').innerText = pRelMax !== null ? pRelMax.toFixed(1) : '--';
 
       } catch (e) {
-        console.warn("Aviso:", e);
+        console.warn("Aviso al cargar datos actuales:", e);
+      }
+    }
+
+    async function cargarHistoricoTotales() {
+      try {
+        const res = await fetch('historico_diario.csv?t=' + Date.now());
+        if (!res.ok) return;
+        const text = await res.text();
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length < 2) return;
+
+        let totalLluviaMes = 0;
+        let totalLluviaAnual = 0;
+        let maxVientoAnual = 0;
+        let minBarMes = 9999;
+        let maxBarMes = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',');
+          if (cols.length < 5) continue;
+          const ll = parseFloat(cols[cols.length - 1]) || 0;
+          totalLluviaMes += ll;
+          totalLluviaAnual += ll;
+          const w = parseFloat(cols[cols.length - 3]) || 0;
+          const g = parseFloat(cols[cols.length - 2]) || 0;
+          if (g > maxVientoAnual) maxVientoAnual = g;
+
+          const pAbsMax = parseFloat(cols[6]) || 0;
+          const pAbsMin = parseFloat(cols[7]) || 0;
+          if (pAbsMax > maxBarMes) maxBarMes = pAbsMax;
+          if (pAbsMin > 0 && pAbsMin < minBarMes) minBarMes = pAbsMin;
+        }
+
+        document.getElementById('val-lluvia-mes').innerText = totalLluviaMes.toFixed(1) + ' mm';
+        document.getElementById('val-lluvia-anual').innerText = totalLluviaAnual.toFixed(1) + ' mm';
+        document.getElementById('val-viento-max-anual').innerText = maxVientoAnual.toFixed(1) + ' km/h';
+
+        if (maxBarMes > 0) document.getElementById('val-pres-mes-max').innerText = maxBarMes.toFixed(1);
+        if (minBarMes < 9990) document.getElementById('val-pres-mes-min').innerText = minBarMes.toFixed(1);
+
+      } catch (e) {
+        console.warn("Aviso al calcular totales históricos:", e);
       }
     }
 
@@ -550,33 +764,65 @@
         if (!Array.isArray(obsList) || obsList.length === 0) return;
 
         const labels = [];
-        const seriesTemp = [];
-        const seriesSens = [];
-        const seriesHum = [];
-        const seriesPres = [];
         const seriesViento = [];
         const seriesRafaga = [];
         const seriesLluvia = [];
+        const seriesLluviaTasa = [];
+        const seriesPresAbs = [];
 
-        // Filtrar y ordenar
         obsList.forEach(item => {
           const horaLocal = item.obsTimeLocal ? item.obsTimeLocal.split(' ')[1].substring(0, 5) : '';
           const m = item.metric || {};
-          const t = m.tempAvg !== null ? m.tempAvg : (m.tempHigh !== null ? m.tempHigh : null);
+          const t = m.tempAvg !== null ? m.tempAvg : (m.tempHigh !== null ? m.tempHigh : 15.0);
           
-          if (t !== null && horaLocal) {
+          if (horaLocal) {
             labels.push(horaLocal);
-            seriesTemp.push(t);
-            seriesSens.push(m.windchillAvg !== null ? m.windchillAvg : t);
-            seriesHum.push(item.humidityAvg !== null ? item.humidityAvg : item.humidityHigh);
-            seriesPres.push(m.pressureMin !== null ? m.pressureMin : m.pressureMax);
+
+            // Viento y Ráfagas
             seriesViento.push(m.windspeedAvg !== null ? m.windspeedAvg : 0);
-            seriesRafaga.push(m.windgustHigh !== null ? m.windgustHigh : 0);
+            seriesRafaga.push(m.windgustHigh !== null ? m.windgustHigh : (m.windspeedAvg || 0));
+
+            // Lluvia
             seriesLluvia.push(m.precipTotal !== null ? m.precipTotal : 0);
+            seriesLluviaTasa.push(m.precipRate !== null ? m.precipRate : 0);
+
+            // Presión Absoluta
+            const pRel = m.pressureMin !== null ? m.pressureMin : (m.pressureMax || m.pressure || 1013.0);
+            const pAbs = m.pressureAbs !== undefined ? m.pressureAbs : calcularPresionAbsoluta(pRel, t);
+            seriesPresAbs.push(pAbs);
           }
         });
 
-        renderCharts(labels, seriesTemp, seriesSens, seriesHum, seriesPres, seriesViento, seriesRafaga, seriesLluvia);
+        // Calcular tendencia de 3 horas si hay datos suficientes
+        if (seriesPresAbs.length >= 2) {
+          const pFinal = seriesPresAbs[seriesPresAbs.length - 1];
+          const pInicio = seriesPresAbs[Math.max(0, seriesPresAbs.length - 36)]; // ~3 horas en intervalos 5 min
+          const diff = pFinal - pInicio;
+          const trendElem = document.getElementById('val-pres-trend');
+          const trendValElem = document.getElementById('val-pres-trend-val');
+          
+          if (trendElem && trendValElem) {
+            trendValElem.innerText = (diff >= 0 ? '+' : '') + diff.toFixed(1) + ' hPa / 3h';
+            if (Math.abs(diff) < 0.6) {
+              trendElem.innerText = 'Estable';
+              trendElem.className = 'text-base font-semibold text-slate-600 dark:text-slate-300 mt-1';
+            } else if (diff > 0) {
+              trendElem.innerText = 'Subiendo (' + (diff > 1.5 ? 'Rápido' : 'Lentamente') + ')';
+              trendElem.className = 'text-base font-semibold text-emerald-600 dark:text-emerald-400 mt-1';
+            } else {
+              trendElem.innerText = 'Bajando (' + (diff < -1.5 ? 'Rápido' : 'Lentamente') + ')';
+              trendElem.className = 'text-base font-semibold text-amber-500 mt-1';
+            }
+          }
+        }
+
+        const lastWind = seriesViento.length ? seriesViento[seriesViento.length - 1] : 0;
+        const lastDirItem = obsList[obsList.length - 1];
+        const lastDir = degToCompass(lastDirItem ? lastDirItem.winddirAvg : 0);
+        const badgeWind = document.getElementById('badge-wind-val');
+        if (badgeWind) badgeWind.innerText = `${lastWind.toFixed(1)} km/h (${lastDir})`;
+
+        renderChartsCerrillos(labels, seriesLluvia, seriesLluviaTasa, seriesViento, seriesRafaga, seriesPresAbs);
         renderTabla(obsList);
 
       } catch (e) {
@@ -584,7 +830,7 @@
       }
     }
 
-    function renderCharts(labels, sTemp, sSens, sHum, sPres, sViento, sRafaga, sLluvia) {
+    function renderChartsCerrillos(labels, sLluvia, sLluviaTasa, sViento, sRafaga, sPresAbs) {
       const isDark = document.documentElement.classList.contains('dark');
       const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
       const textColor = isDark ? '#94a3b8' : '#64748b';
@@ -601,27 +847,75 @@
         }
       };
 
-      // Chart 1: Temp
-      if (chartTemp) chartTemp.destroy();
-      chartTemp = new Chart(document.getElementById('chart-temperatura'), {
+      // 1. Gráfico de Precipitación & Tasa (Idéntico a Cerrillos)
+      if (chartLluvia) chartLluvia.destroy();
+      chartLluvia = new Chart(document.getElementById('chartLluvia'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Lluvia Acumulada (mm)',
+              data: sLluvia,
+              backgroundColor: '#0284c7',
+              borderRadius: 3,
+              yAxisID: 'yRain'
+            },
+            {
+              type: 'line',
+              label: 'Intensidad (mm/h)',
+              data: sLluviaTasa,
+              borderColor: '#38bdf8',
+              backgroundColor: 'transparent',
+              tension: 0.2,
+              pointRadius: 1,
+              yAxisID: 'yRate'
+            }
+          ]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            x: commonOptions.scales.x,
+            yRain: {
+              type: 'linear',
+              position: 'left',
+              grid: { color: gridColor },
+              ticks: { color: textColor, callback: val => val + ' mm' }
+            },
+            yRate: {
+              type: 'linear',
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              ticks: { color: textColor, callback: val => val + ' mm/h' }
+            }
+          }
+        }
+      });
+
+      // 2. Gráfico de Velocidad y Ráfagas (km/h) (Idéntico a Cerrillos)
+      if (chartViento) chartViento.destroy();
+      chartViento = new Chart(document.getElementById('chartViento'), {
         type: 'line',
         data: {
           labels: labels,
           datasets: [
             {
-              label: 'Temperatura (°C)',
-              data: sTemp,
-              borderColor: '#f59e0b',
-              backgroundColor: 'rgba(245, 158, 11, 0.15)',
+              label: 'Ráfaga Máx (km/h)',
+              data: sRafaga,
+              borderColor: '#a855f7',
+              backgroundColor: 'rgba(168, 85, 247, 0.1)',
               fill: true,
               tension: 0.3,
               pointRadius: 2
             },
             {
-              label: 'Sensación Térmica (°C)',
-              data: sSens,
-              borderColor: '#0284c7',
+              label: 'Velocidad Media (km/h)',
+              data: sViento,
+              borderColor: '#06b6d4',
               borderDash: [4, 4],
+              backgroundColor: 'transparent',
               tension: 0.3,
               pointRadius: 0
             }
@@ -630,29 +924,26 @@
         options: commonOptions
       });
 
-      // Chart 2: Humedad y Presión
-      if (chartHumPres) chartHumPres.destroy();
-      chartHumPres = new Chart(document.getElementById('chart-humedad-presion'), {
+      // 3. Gráfico de Evolución Barométrica Absoluta (hPa) (Idéntico a Cerrillos)
+      if (chartBarometro) chartBarometro.destroy();
+      const validPres = sPresAbs.filter(v => v !== null && v > 700);
+      const minBar = validPres.length ? Math.floor(Math.min(...validPres) - 1) : 840;
+      const maxBar = validPres.length ? Math.ceil(Math.max(...validPres) + 1) : 860;
+
+      chartBarometro = new Chart(document.getElementById('chartBarometro'), {
         type: 'line',
         data: {
           labels: labels,
           datasets: [
             {
-              label: 'Humedad (%)',
-              data: sHum,
-              borderColor: '#38bdf8',
-              backgroundColor: 'rgba(56, 189, 248, 0.1)',
-              yAxisID: 'yHum',
+              label: 'Presión Absoluta (hPa)',
+              data: sPresAbs,
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.12)',
+              fill: true,
               tension: 0.3,
-              pointRadius: 2
-            },
-            {
-              label: 'Presión (hPa)',
-              data: sPres,
-              borderColor: '#a855f7',
-              yAxisID: 'yPres',
-              tension: 0.3,
-              pointRadius: 2
+              pointRadius: 2,
+              pointHoverRadius: 4
             }
           ]
         },
@@ -660,66 +951,14 @@
           ...commonOptions,
           scales: {
             x: commonOptions.scales.x,
-            yHum: {
-              type: 'linear',
-              position: 'left',
+            y: {
+              min: minBar,
+              max: maxBar,
               grid: { color: gridColor },
-              ticks: { color: textColor, callback: val => val + '%' }
-            },
-            yPres: {
-              type: 'linear',
-              position: 'right',
-              grid: { drawOnChartArea: false },
               ticks: { color: textColor, callback: val => val + ' hPa' }
             }
           }
         }
-      });
-
-      // Chart 3: Viento
-      if (chartViento) chartViento.destroy();
-      chartViento = new Chart(document.getElementById('chart-viento'), {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Viento (km/h)',
-              data: sViento,
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.15)',
-              fill: true,
-              tension: 0.3,
-              pointRadius: 2
-            },
-            {
-              label: 'Ráfaga (km/h)',
-              data: sRafaga,
-              borderColor: '#ef4444',
-              tension: 0.3,
-              pointRadius: 2
-            }
-          ]
-        },
-        options: commonOptions
-      });
-
-      // Chart 4: Lluvia
-      if (chartLluvia) chartLluvia.destroy();
-      chartLluvia = new Chart(document.getElementById('chart-lluvia'), {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Lluvia Acumulada (mm)',
-              data: sLluvia,
-              backgroundColor: '#3b82f6',
-              borderRadius: 4
-            }
-          ]
-        },
-        options: commonOptions
       });
     }
 
@@ -733,9 +972,20 @@
         const t = m.tempAvg !== null ? m.tempAvg.toFixed(1) : (m.tempHigh !== null ? m.tempHigh.toFixed(1) : '--');
         const h = item.humidityAvg !== null ? Math.round(item.humidityAvg) : '--';
         const d = m.dewptAvg !== null ? m.dewptAvg.toFixed(1) : '--';
+        
+        // Dirección del viento con cardinal y grados
+        const wDeg = item.winddirAvg !== null && item.winddirAvg !== undefined ? item.winddirAvg : null;
+        const wCard = degToCompass(wDeg);
+        const dirHtml = wDeg !== null ? `<span class="font-bold text-sky-600 dark:text-sky-400 font-mono">${wCard} ${wDeg}°</span>` : '---';
+
         const w = m.windspeedAvg !== null ? m.windspeedAvg.toFixed(1) : '0.0';
         const g = m.windgustHigh !== null ? m.windgustHigh.toFixed(1) : '0.0';
-        const p = m.pressureMin !== null ? m.pressureMin.toFixed(1) : '--';
+        
+        const pRel = m.pressureMin !== null ? m.pressureMin : (m.pressureMax || m.pressure);
+        const pAbs = m.pressureAbs !== undefined ? m.pressureAbs : (pRel ? calcularPresionAbsoluta(pRel, parseFloat(t)) : null);
+
+        const pAbsStr = pAbs !== null ? pAbs.toFixed(1) : '--';
+        const pRelStr = pRel !== null ? pRel.toFixed(1) : '--';
         const ll = m.precipTotal !== null ? m.precipTotal.toFixed(2) : '0.00';
 
         return `
@@ -744,9 +994,11 @@
             <td class="p-2.5 font-bold">${t} °C</td>
             <td class="p-2.5">${h}%</td>
             <td class="p-2.5 text-slate-500 dark:text-slate-400">${d} °C</td>
+            <td class="p-2.5">${dirHtml}</td>
             <td class="p-2.5 text-emerald-600 dark:text-emerald-400 font-semibold">${w}</td>
             <td class="p-2.5 text-red-500 font-semibold">${g}</td>
-            <td class="p-2.5">${p}</td>
+            <td class="p-2.5 font-extrabold text-indigo-600 dark:text-indigo-400">${pAbsStr}</td>
+            <td class="p-2.5 text-slate-500 dark:text-slate-400">${pRelStr}</td>
             <td class="p-2.5 text-blue-600 dark:text-blue-400 font-bold">${ll}</td>
           </tr>
         `;
@@ -754,7 +1006,7 @@
     }
 
     function actualizarGraficosEstilo() {
-      if (chartTemp) recargarDatos();
+      recargarDatos();
     }
 
     // Inicializar

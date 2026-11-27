@@ -146,9 +146,14 @@
 
       <!-- TABLA TIPO NOAA DE DÍAS DEL MES -->
       <div class="overflow-x-auto no-scrollbar">
-        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
-          <i data-feather="file-text" class="w-4 h-4 text-sky-500"></i> Registro Diario Detallado (Estilo Informe NOAA)
-        </h4>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <i data-feather="file-text" class="w-4 h-4 text-sky-500"></i> Registro Diario Detallado (Estilo Informe NOAA)
+          </h4>
+          <a href="historico_diario.xlsx" download class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition">
+            <i data-feather="download" class="w-3.5 h-3.5"></i> Descargar Registro en Excel (XLSX)
+          </a>
+        </div>
         <table class="w-full text-xs text-left">
           <thead class="bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
             <tr>
@@ -157,7 +162,8 @@
               <th class="p-2.5">Temp Mín (°C)</th>
               <th class="p-2.5">Temp Media (°C)</th>
               <th class="p-2.5">Humedad (%)</th>
-              <th class="p-2.5">Presión (hPa)</th>
+              <th class="p-2.5">Presión Abs (hPa)</th>
+              <th class="p-2.5">Presión Rel (hPa)</th>
               <th class="p-2.5">Viento Máx (km/h)</th>
               <th class="p-2.5">Ráfaga Máx (km/h)</th>
               <th class="p-2.5">Lluvia (mm)</th>
@@ -165,7 +171,7 @@
           </thead>
           <tbody id="tabla-historico-body" class="divide-y divide-slate-100 dark:divide-slate-700/40 text-slate-700 dark:text-slate-200 font-medium">
             <tr>
-              <td colspan="9" class="p-4 text-center text-slate-400">Cargando datos climáticos...</td>
+              <td colspan="10" class="p-4 text-center text-slate-400">Cargando datos climáticos...</td>
             </tr>
           </tbody>
         </table>
@@ -258,7 +264,7 @@
 
       const tbody = document.getElementById('tabla-historico-body');
       if (filas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">Sin registros históricos aún.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400">Sin registros históricos aún.</td></tr>`;
         return;
       }
 
@@ -266,6 +272,8 @@
       const filasOrdenadas = [...filas].reverse();
       tbody.innerHTML = filasOrdenadas.map(f => {
         const lluvia = parseFloat(f.Lluvia_Total) || 0;
+        const pAbs = (f.Presion_Abs_Min && f.Presion_Abs_Max) ? `${f.Presion_Abs_Min} - ${f.Presion_Abs_Max}` : (f.Presion_Min && f.Presion_Max ? `${f.Presion_Min} - ${f.Presion_Max}` : '--');
+        const pRel = (f.Presion_Rel_Min && f.Presion_Rel_Max) ? `${f.Presion_Rel_Min} - ${f.Presion_Rel_Max}` : '--';
         return `
           <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
             <td class="p-2.5 font-semibold text-sky-600 dark:text-sky-400">${f.Fecha}</td>
@@ -273,13 +281,15 @@
             <td class="p-2.5 font-bold text-sky-500">${f.Temp_Min} °C</td>
             <td class="p-2.5">${f.Temp_Media} °C</td>
             <td class="p-2.5">${f.Humedad_Min}% - ${f.Humedad_Max}%</td>
-            <td class="p-2.5">${f.Presion_Min} - ${f.Presion_Max}</td>
+            <td class="p-2.5 font-medium text-indigo-600 dark:text-indigo-400">${pAbs}</td>
+            <td class="p-2.5 text-slate-500 dark:text-slate-400">${pRel}</td>
             <td class="p-2.5 text-emerald-600 dark:text-emerald-400 font-semibold">${f.Viento_Max}</td>
             <td class="p-2.5 text-amber-500 font-semibold">${f.Rafaga_Max}</td>
             <td class="p-2.5 font-bold ${lluvia > 0 ? 'text-blue-600 dark:text-blue-400 font-extrabold' : 'text-slate-400'}">${lluvia.toFixed(2)}</td>
           </tr>
         `;
       }).join('');
+      if (window.feather) feather.replace();
 
       // Estadísticas
       let totalLluvia = 0;
