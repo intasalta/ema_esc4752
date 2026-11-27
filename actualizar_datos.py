@@ -21,6 +21,8 @@ STATION_NAME = "Esc. 4752 Aráoz Costas"
 STATION_LOCATION = "Campo Quijano, Salta - Argentina"
 STATION_LAT = -24.911553
 STATION_LON = -65.632192
+STATION_ALTITUDE = 1520.0  # Altitud oficial en metros sobre el nivel del mar (msnm)
+STATION_HARDWARE = "DAZA Wireless Weather Station"
 DEFAULT_API_KEY = "f6d2efe5720d47ea92efe5720df7eaa8"
 
 HEADERS = {
@@ -28,6 +30,25 @@ HEADERS = {
 }
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def calcular_presion_absoluta(p_rel, temp_c, altitud=STATION_ALTITUDE):
+    """
+    Calcula la Presión Absoluta (Pabs) a partir de la Presión Relativa (Prel),
+    la altitud (h en msnm) y la temperatura (°C) según la fórmula barométrica:
+    Pabs = Prel * (1 - (0.0065 * h) / (T + 0.0065 * h + 273.15)) ^ 5.257
+    """
+    if p_rel is None:
+        return None
+    try:
+        t = float(temp_c) if temp_c is not None else 15.0
+        h = float(altitud)
+        term = (0.0065 * h) / (t + 0.0065 * h + 273.15)
+        factor = (1.0 - term) ** 5.257
+        return round(float(p_rel) * factor, 1)
+    except Exception as e:
+        print(f"[!] Error al calcular presión absoluta: {e}")
+        return round(float(p_rel), 1)
 
 def obtener_api_key_dinamica(station_id=STATION_ID):
     """Extrae dinámicamente el API Key público vigente desde el frontend de Wunderground."""
@@ -173,7 +194,8 @@ def procesar_datos():
     # Calcular estadísticas del día a partir de la serie de hoy si el resumen diario no está completo
     temps_hoy = []
     hum_hoy = []
-    pres_hoy = []
+    pres_rel_hoy = []
+    pres_abs_hoy = []
     viento_max = 0.0
     rafaga_max = 0.0
     lluvia_total = metric_act.get("precipTotal") or 0.0
@@ -181,15 +203,21 @@ def procesar_datos():
     if data_hoy and "observations" in data_hoy:
         for obs in data_hoy["observations"]:
             m = obs.get("metric", {})
-            t = m.get("tempAvg") or m.get("tempHigh") or m.get("tempLow")
+            t = m.get("tempAvg") if m.get("tempAvg") is not None else (m.get("tempHigh") or m.get("tempLow"))
             if t is not None:
                 temps_hoy.append(t)
-            h = obs.get("humidityAvg") or obs.get("humidityHigh")
+            h = obs.get("humidityAvg") if obs.get("humidityAvg") is not None else obs.get("humidityHigh")
             if h is not None:
                 hum_hoy.append(h)
-            p = m.get("pressureMax") or m.get("pressureMin")
-            if p is not None and p > 800:
-                pres_hoy.append(p)
+            
+            p_rel = m.get("pressureMin") or m.get("pressureMax") or m.get("pressure")
+            if p_rel is not None and p_rel > 700:
+                pres_rel_hoy.append(p_rel)
+                p_abs = calcular_presion_absoluta(p_rel, t, STATION_ALTITUDE)
+                pres_abs_hoy.append(p_abs)
+                m["pressureRel"] = p_rel
+                m["pressureAbs"] = p_abs
+
             w = m.get("windspeedHigh") or m.get("windspeedAvg") or 0.0
             if w > viento_max:
                 viento_max = w
@@ -199,6 +227,14 @@ def procesar_datos():
             ll = m.get("precipTotal") or 0.0
             if ll > lluvia_total:
                 lluvia_total = ll
+
+    # Presiones actuales
+    p_rel_actual = metric_act.get("pressure")
+    p_abs_actual = calcular_presion_absoluta(p_rel_actual, metric_act.get("temp"), STATION_ALTITUDE)
+    if p_abs_actual is not None:
+        pres_abs_hoy.append(p_abs_actual)
+    if p_rel_actual is not None:
+        pres_rel_hoy.append(p_rel_actual)
 
     # Si hay resumen diario de la API, cotejar
     if data_resumen_dia and "observations" in data_resumen_dia and data_resumen_dia["observations"]:
@@ -243,8 +279,8 @@ def procesar_datos():
             "pais": obs_actual.get("country", "AR"),
             "latitud": obs_actual.get("lat", STATION_LAT),
             "longitud": obs_actual.get("lon", STATION_LON),
-            "elevacion_m": metric_act.get("elev", 1520),
-            "software": obs_actual.get("softwareType", "Wunderground PWS"),
+            "elevacion_m": STATION_ALTITUDE,
+            "software": STATION_HARDWARE,
             "actualizado_utc": obs_actual.get("obsTimeUtc"),
             "actualizado_local": obs_actual.get("obsTimeLocal"),
             "epoch": obs_actual.get("epoch"),
@@ -256,7 +292,9 @@ def procesar_datos():
             "indice_calor": metric_act.get("heatIndex"),
             "punto_rocio": metric_act.get("dewpt"),
             "humedad": obs_actual.get("humidity"),
-            "presion": metric_act.get("pressure"),
+            "presion": p_rel_actual,
+            "presion_relativa": p_rel_actual,
+            "presion_absoluta": p_abs_actual,
             "viento_velocidad": metric_act.get("windSpeed"),
             "viento_rafaga": metric_act.get("windGust"),
             "viento_direccion_grados": wind_deg,
@@ -272,8 +310,12 @@ def procesar_datos():
             "temperatura_media": temp_avg_dia,
             "humedad_max": max(hum_hoy) if hum_hoy else obs_actual.get("humidity"),
             "humedad_min": min(hum_hoy) if hum_hoy else obs_actual.get("humidity"),
-            "presion_max": max(pres_hoy) if pres_hoy else metric_act.get("pressure"),
-            "presion_min": min(pres_hoy) if pres_hoy else metric_act.get("pressure"),
+            "presion_max": max(pres_rel_hoy) if pres_rel_hoy else p_rel_actual,
+            "presion_min": min(pres_rel_hoy) if pres_rel_hoy else p_rel_actual,
+            "presion_rel_max": max(pres_rel_hoy) if pres_rel_hoy else p_rel_actual,
+            "presion_rel_min": min(pres_rel_hoy) if pres_rel_hoy else p_rel_actual,
+            "presion_abs_max": max(pres_abs_hoy) if pres_abs_hoy else p_abs_actual,
+            "presion_abs_min": min(pres_abs_hoy) if pres_abs_hoy else p_abs_actual,
             "viento_maximo": round(viento_max, 1),
             "rafaga_maxima": round(rafaga_max, 1),
             "lluvia_total": round(lluvia_total, 2)
@@ -314,7 +356,8 @@ def actualizar_csv_historico(csv_path, fecha_iso, datos):
     """Guarda o actualiza la fila del día en un CSV permanente para los resúmenes mensuales/anuales."""
     campos = [
         "Fecha", "Temp_Max", "Temp_Min", "Temp_Media", "Humedad_Max", "Humedad_Min",
-        "Presion_Max", "Presion_Min", "Viento_Max", "Rafaga_Max", "Lluvia_Total"
+        "Presion_Abs_Max", "Presion_Abs_Min", "Presion_Rel_Max", "Presion_Rel_Min",
+        "Viento_Max", "Rafaga_Max", "Lluvia_Total"
     ]
     
     filas = {}
@@ -323,6 +366,15 @@ def actualizar_csv_historico(csv_path, fecha_iso, datos):
             with open(csv_path, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for r in reader:
+                    # Retrocompatibilidad si existían campos viejos
+                    if "Presion_Abs_Max" not in r or not r.get("Presion_Abs_Max"):
+                        p_rel_max = float(r.get("Presion_Max") or 1013.0)
+                        p_rel_min = float(r.get("Presion_Min") or 1013.0)
+                        t_med = float(r.get("Temp_Media") or 15.0)
+                        r["Presion_Abs_Max"] = calcular_presion_absoluta(p_rel_max, t_med, STATION_ALTITUDE)
+                        r["Presion_Abs_Min"] = calcular_presion_absoluta(p_rel_min, t_med, STATION_ALTITUDE)
+                        r["Presion_Rel_Max"] = p_rel_max
+                        r["Presion_Rel_Min"] = p_rel_min
                     filas[r["Fecha"]] = r
         except Exception as e:
             print(f"[!] Error al leer CSV existente: {e}")
@@ -335,8 +387,10 @@ def actualizar_csv_historico(csv_path, fecha_iso, datos):
         "Temp_Media": ext["temperatura_media"],
         "Humedad_Max": ext["humedad_max"],
         "Humedad_Min": ext["humedad_min"],
-        "Presion_Max": ext["presion_max"],
-        "Presion_Min": ext["presion_min"],
+        "Presion_Abs_Max": ext.get("presion_abs_max", ext.get("presion_max")),
+        "Presion_Abs_Min": ext.get("presion_abs_min", ext.get("presion_min")),
+        "Presion_Rel_Max": ext.get("presion_rel_max", ext.get("presion_max")),
+        "Presion_Rel_Min": ext.get("presion_rel_min", ext.get("presion_min")),
         "Viento_Max": ext["viento_maximo"],
         "Rafaga_Max": ext["rafaga_maxima"],
         "Lluvia_Total": ext["lluvia_total"]
@@ -344,10 +398,12 @@ def actualizar_csv_historico(csv_path, fecha_iso, datos):
 
     # Escribir ordenado cronológicamente
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=campos)
+        writer = csv.DictWriter(f, fieldnames=campos, extrasaction="ignore")
         writer.writeheader()
         for fecha in sorted(filas.keys()):
-            writer.writerow(filas[fecha])
+            # Filtrar para escribir solo los campos del nuevo esquema
+            row_dict = {k: filas[fecha].get(k, "") for k in campos}
+            writer.writerow(row_dict)
     print(f"[OK] CSV histórico actualizado: {csv_path} ({len(filas)} días registrados)")
     return filas
 
@@ -364,13 +420,13 @@ def actualizar_excel_historico(xlsx_path, filas):
         ws.title = "Histórico Diario"
 
         # Título y Subtítulo
-        ws.merge_cells("A1:K1")
+        ws.merge_cells("A1:M1")
         ws["A1"] = f"Estación Meteorológica Automática — {STATION_NAME} ({STATION_ID})"
         ws["A1"].font = Font(name="Calibri", size=14, bold=True, color="1F4E78")
         ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
 
-        ws.merge_cells("A2:K2")
-        ws["A2"] = f"Ubicación: {STATION_LOCATION} | Proyecto MATTEO - INTA Salta"
+        ws.merge_cells("A2:M2")
+        ws["A2"] = f"Ubicación: {STATION_LOCATION} | Altitud: {int(STATION_ALTITUDE)} msnm | {STATION_HARDWARE} | Proyecto MATTEO - INTA Salta"
         ws["A2"].font = Font(name="Calibri", size=10, italic=True, color="595959")
         ws["A2"].alignment = Alignment(horizontal="left", vertical="center")
 
@@ -382,8 +438,10 @@ def actualizar_excel_historico(xlsx_path, filas):
             ("Temp_Media", "Temp Media (°C)"),
             ("Humedad_Max", "Humedad Máx (%)"),
             ("Humedad_Min", "Humedad Mín (%)"),
-            ("Presion_Max", "Presión Máx (hPa)"),
-            ("Presion_Min", "Presión Mín (hPa)"),
+            ("Presion_Abs_Max", "Presión Abs Máx (hPa)"),
+            ("Presion_Abs_Min", "Presión Abs Mín (hPa)"),
+            ("Presion_Rel_Max", "Presión Rel Máx (hPa)"),
+            ("Presion_Rel_Min", "Presión Rel Mín (hPa)"),
             ("Viento_Max", "Viento Máx (km/h)"),
             ("Rafaga_Max", "Ráfaga Máx (km/h)"),
             ("Lluvia_Total", "Lluvia Total (mm)")
