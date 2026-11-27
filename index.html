@@ -758,16 +758,28 @@
 
     async function cargarSerieHoy() {
       try {
-        const res = await fetch('hoy_5min.json?t=' + Date.now());
-        if (!res.ok) return;
-        const obsList = await res.json();
-        if (!Array.isArray(obsList) || obsList.length === 0) return;
+        const [res5m, res7d] = await Promise.all([
+          fetch('hoy_5min.json?t=' + Date.now()).catch(() => null),
+          fetch('historico_7dias.json?t=' + Date.now()).catch(() => null)
+        ]);
 
-        const labels = [];
+        let obsList = [];
+        if (res5m && res5m.ok) {
+          obsList = await res5m.json();
+        }
+
+        let obs7d = [];
+        if (res7d && res7d.ok) {
+          obs7d = await res7d.json();
+        }
+
+        if (!Array.isArray(obsList)) obsList = [];
+        if (!Array.isArray(obs7d)) obs7d = [];
+
+        // 1. Serie de 5 minutos (Viento, Ráfagas y Barómetro)
+        const labels5m = [];
         const seriesViento = [];
         const seriesRafaga = [];
-        const seriesLluvia = [];
-        const seriesLluviaTasa = [];
         const seriesPresAbs = [];
 
         obsList.forEach(item => {
@@ -776,21 +788,74 @@
           const t = m.tempAvg !== null ? m.tempAvg : (m.tempHigh !== null ? m.tempHigh : 15.0);
           
           if (horaLocal) {
-            labels.push(horaLocal);
+            labels5m.push(horaLocal);
 
             // Viento y Ráfagas
             seriesViento.push(m.windspeedAvg !== null ? m.windspeedAvg : 0);
             seriesRafaga.push(m.windgustHigh !== null ? m.windgustHigh : (m.windspeedAvg || 0));
-
-            // Lluvia
-            seriesLluvia.push(m.precipTotal !== null ? m.precipTotal : 0);
-            seriesLluviaTasa.push(m.precipRate !== null ? m.precipRate : 0);
 
             // Presión Absoluta
             const pRel = m.pressureMin !== null ? m.pressureMin : (m.pressureMax || m.pressure || 1013.0);
             const pAbs = m.pressureAbs !== undefined ? m.pressureAbs : calcularPresionAbsoluta(pRel, t);
             seriesPresAbs.push(pAbs);
           }
+        });
+
+        // 2. Serie Horaria de Precipitación (Estilo Cerrillos - Lluvia por hora en barras)
+        // Combinamos observaciones horarias de 7 días y de hoy para tener una ventana continua
+        const obsMap = {};
+        [...obs7d, ...obsList].forEach(item => {
+          if (item && item.obsTimeLocal) {
+            obsMap[item.obsTimeLocal] = item;
+          }
+        });
+
+        const sortedTimes = Object.keys(obsMap).sort();
+        // Agrupar por hora (YYYY-MM-DD HH:00)
+        const horasMap = {};
+        sortedTimes.forEach(t => {
+          const partes = t.split(' ');
+          const fecha = partes[0];
+          const hora = partes[1].substring(0, 2) + ':00';
+          const k = `${fecha} ${hora}`;
+          if (!horasMap[k]) horasMap[k] = [];
+          horasMap[k].push(obsMap[t]);
+        });
+
+        const sortedHours = Object.keys(horasMap).sort();
+        // Tomar hasta las últimas 24 horas registradas
+        const horasGraficar = sortedHours.slice(-24);
+
+        const labelsLluviaHora = [];
+        const seriesLluviaHora = [];
+        const seriesLluviaTasaHora = [];
+        let prevPrecip = 0.0;
+        let lastDate = '';
+
+        horasGraficar.forEach(k => {
+          const partes = k.split(' ');
+          const fecha = partes[0];
+          const horaLabel = partes[1]; // 'HH:00'
+
+          // Reiniciar acumulador diario al cambiar de fecha a medianoche
+          if (lastDate && fecha !== lastDate) {
+            prevPrecip = 0.0;
+          }
+          lastDate = fecha;
+
+          const obsHora = horasMap[k];
+          const totales = obsHora.map(o => o.metric ? o.metric.precipTotal : null).filter(v => v !== null && v !== undefined);
+          const tasas = obsHora.map(o => o.metric ? o.metric.precipRate : null).filter(v => v !== null && v !== undefined);
+
+          const maxTot = totales.length ? Math.max(...totales) : prevPrecip;
+          // Lluvia caída en esta hora (delta entre el final de la hora y el valor previo)
+          const lluviaHora = Math.max(0, Math.round((maxTot - prevPrecip) * 100) / 100);
+          prevPrecip = maxTot;
+          const maxTasa = tasas.length ? Math.max(...tasas) : 0.0;
+
+          labelsLluviaHora.push(horaLabel);
+          seriesLluviaHora.push(lluviaHora);
+          seriesLluviaTasaHora.push(maxTasa);
         });
 
         // Calcular tendencia de 3 horas si hay datos suficientes
@@ -817,20 +882,20 @@
         }
 
         const lastWind = seriesViento.length ? seriesViento[seriesViento.length - 1] : 0;
-        const lastDirItem = obsList[obsList.length - 1];
+        const lastDirItem = obsList.length ? obsList[obsList.length - 1] : null;
         const lastDir = degToCompass(lastDirItem ? lastDirItem.winddirAvg : 0);
         const badgeWind = document.getElementById('badge-wind-val');
         if (badgeWind) badgeWind.innerText = `${lastWind.toFixed(1)} km/h (${lastDir})`;
 
-        renderChartsCerrillos(labels, seriesLluvia, seriesLluviaTasa, seriesViento, seriesRafaga, seriesPresAbs);
-        renderTabla(obsList);
+        renderChartsCerrillos(labels5m, labelsLluviaHora, seriesLluviaHora, seriesLluviaTasaHora, seriesViento, seriesRafaga, seriesPresAbs);
+        if (obsList.length) renderTabla(obsList);
 
       } catch (e) {
         console.warn("Aviso al cargar serie hoy:", e);
       }
     }
 
-    function renderChartsCerrillos(labels, sLluvia, sLluviaTasa, sViento, sRafaga, sPresAbs) {
+    function renderChartsCerrillos(labels5m, labelsLluvia, sLluviaHora, sLluviaTasa, sViento, sRafaga, sPresAbs) {
       const isDark = document.documentElement.classList.contains('dark');
       const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
       const textColor = isDark ? '#94a3b8' : '#64748b';
@@ -847,17 +912,17 @@
         }
       };
 
-      // 1. Gráfico de Precipitación & Tasa (Idéntico a Cerrillos)
+      // 1. Gráfico de Precipitación & Tasa (Idéntico a Cerrillos - Por Hora)
       if (chartLluvia) chartLluvia.destroy();
       chartLluvia = new Chart(document.getElementById('chartLluvia'), {
         type: 'bar',
         data: {
-          labels: labels,
+          labels: labelsLluvia,
           datasets: [
             {
               type: 'bar',
-              label: 'Lluvia Acumulada (mm)',
-              data: sLluvia,
+              label: 'Lluvia (mm)',
+              data: sLluviaHora,
               backgroundColor: '#0284c7',
               borderRadius: 3,
               yAxisID: 'yRain'
@@ -881,12 +946,14 @@
             yRain: {
               type: 'linear',
               position: 'left',
+              beginAtZero: true,
               grid: { color: gridColor },
               ticks: { color: textColor, callback: val => val + ' mm' }
             },
             yRate: {
               type: 'linear',
               position: 'right',
+              beginAtZero: true,
               grid: { drawOnChartArea: false },
               ticks: { color: textColor, callback: val => val + ' mm/h' }
             }
@@ -899,7 +966,7 @@
       chartViento = new Chart(document.getElementById('chartViento'), {
         type: 'line',
         data: {
-          labels: labels,
+          labels: labels5m,
           datasets: [
             {
               label: 'Ráfaga Máx (km/h)',
@@ -933,7 +1000,7 @@
       chartBarometro = new Chart(document.getElementById('chartBarometro'), {
         type: 'line',
         data: {
-          labels: labels,
+          labels: labels5m,
           datasets: [
             {
               label: 'Presión Absoluta (hPa)',
