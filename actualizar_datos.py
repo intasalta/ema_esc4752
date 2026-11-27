@@ -49,10 +49,20 @@ def obtener_api_key_dinamica(station_id=STATION_ID):
 
 
 def consultar_endpoint(url):
-    """Consulta una URL y retorna el objeto JSON decodificado."""
-    req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    """Consulta una URL y retorna el objeto JSON decodificado, manejando 204 No Content."""
+    try:
+        req = urllib.request.Request(url, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            if resp.status == 204:
+                return None
+            cuerpo = resp.read().decode("utf-8")
+            if not cuerpo or not cuerpo.strip():
+                return None
+            return json.loads(cuerpo)
+    except urllib.error.HTTPError as e:
+        if e.code == 204:
+            return None
+        raise e
 
 
 def procesar_datos():
@@ -70,8 +80,8 @@ def procesar_datos():
     
     # 2. Obtener datos detallados de hoy (intervalos de 5-10 min)
     url_hoy = (
-        f"https://api.weather.com/v2/pws/history/all"
-        f"?stationId={STATION_ID}&format=json&units=m&numericPrecision=decimal&date={fecha_hoy_str}&apiKey={api_key}"
+        f"https://api.weather.com/v2/pws/observations/all/1day"
+        f"?stationId={STATION_ID}&format=json&units=m&numericPrecision=decimal&apiKey={api_key}"
     )
     
     # 3. Obtener resumen de las últimas 7 días (horario)
@@ -98,7 +108,7 @@ def procesar_datos():
         print(f"[!] Error al descargar datos actuales: {e}")
 
     try:
-        print("[*] Descargando serie detallada de hoy...")
+        print("[*] Descargando serie detallada de hoy (1 día)...")
         data_hoy = consultar_endpoint(url_hoy)
     except Exception as e:
         print(f"[!] Error al descargar serie de hoy: {e}")
@@ -115,12 +125,50 @@ def procesar_datos():
     except Exception as e:
         print(f"[!] Error al descargar resumen del día: {e}")
 
-    if not data_actual or "observations" not in data_actual or not data_actual["observations"]:
-        print("[X] No se pudo obtener la observación actual. Abortando guardado.")
-        return False
+    # Fallback inteligente: Si /current devolvió 204 No Content, tomar el último registro de /1day
+    obs_actual = None
+    if data_actual and "observations" in data_actual and data_actual["observations"]:
+        obs_actual = data_actual["observations"][0]
+        metric_act = obs_actual.get("metric", {})
+    elif data_hoy and "observations" in data_hoy and data_hoy["observations"]:
+        print("[*] Usando la última observación registrada en la serie de hoy como valor actual...")
+        obs_hist = data_hoy["observations"][-1]
+        m_hist = obs_hist.get("metric", {})
+        temp_val = m_hist.get("tempAvg") if m_hist.get("tempAvg") is not None else (m_hist.get("tempHigh") or m_hist.get("tempLow"))
+        
+        metric_act = {
+            "temp": temp_val,
+            "heatIndex": m_hist.get("heatindexAvg") or temp_val,
+            "dewpt": m_hist.get("dewptAvg"),
+            "windChill": m_hist.get("windchillAvg") or temp_val,
+            "windSpeed": m_hist.get("windspeedAvg") or 0.0,
+            "windGust": m_hist.get("windgustHigh") or 0.0,
+            "pressure": m_hist.get("pressureMin") or m_hist.get("pressureMax") or 1013.0,
+            "precipRate": m_hist.get("precipRate", 0.0),
+            "precipTotal": m_hist.get("precipTotal", 0.0),
+            "elev": 453.5
+        }
+        obs_actual = {
+            "stationID": STATION_ID,
+            "obsTimeUtc": obs_hist.get("obsTimeUtc"),
+            "obsTimeLocal": obs_hist.get("obsTimeLocal"),
+            "epoch": obs_hist.get("epoch"),
+            "neighborhood": "Campo Quijano",
+            "softwareType": "EasyWeather V9.3.0",
+            "country": "AR",
+            "lat": obs_hist.get("lat", STATION_LAT),
+            "lon": obs_hist.get("lon", STATION_LON),
+            "winddir": obs_hist.get("winddirAvg", 0),
+            "humidity": obs_hist.get("humidityAvg") or obs_hist.get("humidityHigh"),
+            "solarRadiation": obs_hist.get("solarRadiationHigh"),
+            "uv": obs_hist.get("uvHigh"),
+            "qcStatus": obs_hist.get("qcStatus", 1),
+            "metric": metric_act
+        }
 
-    obs_actual = data_actual["observations"][0]
-    metric_act = obs_actual.get("metric", {})
+    if not obs_actual:
+        print("[X] No se pudo obtener la observación actual ni el fallback. Abortando guardado.")
+        return False
 
     # Calcular estadísticas del día a partir de la serie de hoy si el resumen diario no está completo
     temps_hoy = []

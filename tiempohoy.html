@@ -224,6 +224,23 @@
   </footer>
 
   <script>
+    function formatearDiaMesHora(fechaStr) {
+      if (!fechaStr) return '--';
+      try {
+        const partes = fechaStr.replace('T', ' ').trim().split(' ');
+        const f = partes[0].split('-');
+        const hora = partes[1] ? partes[1].substring(0, 5) : '';
+        if (f.length === 3) {
+          const dia = parseInt(f[2], 10);
+          const mesIdx = parseInt(f[1], 10) - 1;
+          const mesesCortos = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+          const mesNombre = mesesCortos[mesIdx] || f[1];
+          return `${dia} ${mesNombre} - ${hora} hs`;
+        }
+      } catch (err) {}
+      return fechaStr;
+    }
+
     async function recargarDatos() {
       const icon = document.getElementById('icon-refresh');
       if (icon) icon.classList.add('animate-spin');
@@ -237,8 +254,8 @@
         const act = data.clima_actual || {};
         const ext = data.extremos_hoy || {};
 
-        document.getElementById('last-update').innerText = 'Act: ' + (est.actualizado_local || '--');
-        document.getElementById('hora-registro').innerText = (est.actualizado_local ? est.actualizado_local.split(' ')[1] : '--') + ' hs';
+        document.getElementById('last-update').innerText = 'Act: ' + formatearDiaMesHora(est.actualizado_local);
+        document.getElementById('hora-registro').innerText = (est.actualizado_local ? est.actualizado_local.split(' ')[1].substring(0, 5) : '--') + ' hs';
 
         // Temperatura
         document.getElementById('temp-val').innerText = act.temperatura !== null ? act.temperatura.toFixed(1) : '--';

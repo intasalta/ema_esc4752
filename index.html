@@ -78,8 +78,8 @@
         <div class="flex items-center justify-between overflow-x-auto py-2 text-xs font-medium gap-2 no-scrollbar whitespace-nowrap">
           
           <div class="flex items-center gap-2">
-            <a href="index.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/25 text-white font-semibold shadow-sm">
-              <i data-feather="layout" class="h-3.5 w-3.5 text-sky-300"></i> Dashboard
+            <a href="https://intasalta.github.io/emas/" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all shadow-sm" title="Volver al Portal de Estaciones INTA">
+              <i data-feather="home" class="h-3.5 w-3.5 text-sky-300"></i> Inicio
             </a>
 
             <a href="resumen.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all shadow-sm">
@@ -468,6 +468,26 @@
       }
     }
 
+    // Función para formatear fecha en formato legible "Día de Mes - Hora hs"
+    function formatearDiaMesHora(fechaStr) {
+      if (!fechaStr) return 'Desconocida';
+      try {
+        const partes = fechaStr.replace('T', ' ').trim().split(' ');
+        const f = partes[0].split('-');
+        const hora = partes[1] ? partes[1].substring(0, 5) : '';
+        if (f.length === 3) {
+          const dia = parseInt(f[2], 10);
+          const mesIdx = parseInt(f[1], 10) - 1;
+          const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+          const mesNombre = meses[mesIdx] || f[1];
+          return `${dia} de ${mesNombre} - ${hora} hs`;
+        }
+      } catch (err) {
+        console.warn("Error al formatear fecha:", err);
+      }
+      return fechaStr + ' hs';
+    }
+
     async function cargarDatosActuales() {
       try {
         const res = await fetch('datos_actuales.json?t=' + Date.now());
@@ -479,7 +499,7 @@
         const ext = data.extremos_hoy || {};
 
         document.getElementById('label-hora-actualizado').innerText = 
-          (est.actualizado_local || 'Desconocida') + ' hs';
+          formatearDiaMesHora(est.actualizado_local);
         
         if (est.elevacion_m) {
           document.getElementById('station-elev-header').innerText = 

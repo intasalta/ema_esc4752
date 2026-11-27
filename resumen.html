@@ -80,8 +80,11 @@
           <span class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">Balance Estadístico</span>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mt-0.5">
             <i data-feather="calendar" class="text-sky-500 h-6 w-6"></i>
-            <span id="label-mes-actual">Mes en Curso</span>
+            <span id="label-mes-actual">Resumen Climatológico Mensual - Noviembre 2026</span>
           </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Evolución meteorológica diaria del mes en curso.
+          </p>
         </div>
 
         <!-- Indicador de total de días registrados -->
@@ -241,6 +244,17 @@
 
     function procesarYRenderizar(filas) {
       document.getElementById('badge-total-dias').innerText = `${filas.length} día(s) registrado(s)`;
+
+      // Actualizar título con Mes y Año dinámico
+      const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+      const fechaBase = (filas && filas.length > 0) ? filas[filas.length - 1].Fecha : new Date().toISOString().substring(0, 10);
+      const partesF = fechaBase.split('-');
+      const anioStr = partesF[0];
+      const mesStr = meses[parseInt(partesF[1], 10) - 1] || 'Noviembre';
+      const labelMes = document.getElementById('label-mes-actual');
+      if (labelMes) {
+        labelMes.innerText = `Resumen Climatológico Mensual - ${mesStr} ${anioStr}`;
+      }
 
       const tbody = document.getElementById('tabla-historico-body');
       if (filas.length === 0) {
