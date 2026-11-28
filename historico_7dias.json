@@ -1187,5 +1187,46 @@
       "precipRate": null,
       "precipTotal": 0.0
     }
+  },
+  {
+    "stationID": "ICAMPO519",
+    "tz": "America/Argentina/Salta",
+    "obsTimeUtc": "2026-11-28T14:29:29Z",
+    "obsTimeLocal": "2026-11-28 11:29:29",
+    "epoch": 1795876169,
+    "lat": -24.911553,
+    "lon": -65.632192,
+    "solarRadiationHigh": null,
+    "uvHigh": null,
+    "winddirAvg": 324,
+    "humidityHigh": 64.0,
+    "humidityLow": 57.0,
+    "humidityAvg": 60.5,
+    "qcStatus": -1,
+    "metric": {
+      "tempHigh": 23.6,
+      "tempLow": 22.6,
+      "tempAvg": 23.1,
+      "windspeedHigh": 6.1,
+      "windspeedLow": 0.0,
+      "windspeedAvg": 4.1,
+      "windgustHigh": 9.7,
+      "windgustLow": 2.6,
+      "windgustAvg": 7.3,
+      "dewptHigh": 15.7,
+      "dewptLow": 14.5,
+      "dewptAvg": 15.1,
+      "windchillHigh": 23.6,
+      "windchillLow": 22.6,
+      "windchillAvg": 23.1,
+      "heatindexHigh": 23.6,
+      "heatindexLow": 22.5,
+      "heatindexAvg": 23.0,
+      "pressureMax": 1009.14,
+      "pressureMin": 1008.81,
+      "pressureTrend": -0.71,
+      "precipRate": null,
+      "precipTotal": 0.0
+    }
   }
 ]
